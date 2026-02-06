@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatProfileSummary, formatResults, renderResultsAsText } from "./results.js";
+import { fitBand, formatProfileSummary, formatResults, renderResultsAsText } from "./results.js";
 import { matchJobs } from "./matcher.js";
 import { JOBS } from "./jobs.js";
 import type { UserDimensionProfile } from "./types.js";
@@ -14,6 +14,28 @@ const testProfile: UserDimensionProfile = {
   errorPressure: "moderate",
   workValue: "security",
 };
+
+describe("fitBand", () => {
+  it("returns Strong fit for scores >= 0.85", () => {
+    expect(fitBand(0.85)).toBe("Strong fit");
+    expect(fitBand(1.0)).toBe("Strong fit");
+  });
+
+  it("returns Possible fit for scores >= 0.65", () => {
+    expect(fitBand(0.65)).toBe("Possible fit");
+    expect(fitBand(0.84)).toBe("Possible fit");
+  });
+
+  it("returns Stretch for scores >= 0.45", () => {
+    expect(fitBand(0.45)).toBe("Stretch");
+    expect(fitBand(0.64)).toBe("Stretch");
+  });
+
+  it("returns Unlikely fit for scores < 0.45", () => {
+    expect(fitBand(0.44)).toBe("Unlikely fit");
+    expect(fitBand(0)).toBe("Unlikely fit");
+  });
+});
 
 describe("formatProfileSummary", () => {
   it("includes all dimension labels", () => {
@@ -61,17 +83,44 @@ describe("formatResults", () => {
       expect(match.fitPercent).toBeLessThanOrEqual(100);
     }
   });
+
+  it("includes fitBand for each match", () => {
+    const results = matchJobs(JOBS, testProfile);
+    const formatted = formatResults(results, testProfile);
+    for (const match of formatted.topMatches) {
+      expect(["Strong fit", "Possible fit", "Stretch", "Unlikely fit"]).toContain(match.fitBand);
+    }
+  });
 });
 
 describe("renderResultsAsText", () => {
-  it("produces readable text output", () => {
+  it("produces readable text with fit bands instead of percentages", () => {
     const results = matchJobs(JOBS, testProfile);
     const formatted = formatResults(results, testProfile);
     const text = renderResultsAsText(formatted);
 
     expect(text).toContain("Jobs That Fit You");
-    expect(text).toContain("% fit");
+    // Should use fit band labels, not "% fit"
+    expect(text).not.toContain("% fit");
     expect(text.length).toBeGreaterThan(100);
+  });
+
+  it("uses softened elimination language", () => {
+    const results = matchJobs(JOBS, testProfile);
+    const formatted = formatResults(results, testProfile);
+    const text = renderResultsAsText(formatted);
+
+    expect(text).not.toContain("Ruled Out");
+    expect(text).toContain("Less Likely Fits");
+  });
+
+  it("includes scope disclaimer and temporal footer", () => {
+    const results = matchJobs(JOBS, testProfile);
+    const formatted = formatResults(results, testProfile);
+    const text = renderResultsAsText(formatted);
+
+    expect(text).toContain("not a career assessment");
+    expect(text).toContain("preferences today");
   });
 
   it("includes both positive reasons and friction points in output", () => {
@@ -80,6 +129,5 @@ describe("renderResultsAsText", () => {
     const text = renderResultsAsText(formatted);
 
     expect(text).toContain("+");
-    // Some top matches should still have friction points
   });
 });

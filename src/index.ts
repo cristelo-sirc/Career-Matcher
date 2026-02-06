@@ -58,5 +58,5 @@ export {
 export { scoreJob, matchJobs } from "./matcher.js";
 
 // Results
-export { formatResults, formatProfileSummary, renderResultsAsText } from "./results.js";
+export { fitBand, formatResults, formatProfileSummary, renderResultsAsText } from "./results.js";
 export type { FormattedResults, FormattedMatch } from "./results.js";
