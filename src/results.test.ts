@@ -12,7 +12,7 @@ const testProfile: UserDimensionProfile = {
   ruleDensity: "moderate",
   primaryLoadType: "physical",
   errorPressure: "moderate",
-  learningMode: "hands-on",
+  workValue: "security",
 };
 
 describe("formatProfileSummary", () => {
@@ -25,7 +25,7 @@ describe("formatProfileSummary", () => {
     expect(summary).toContain("Rule Density");
     expect(summary).toContain("Primary Load Type");
     expect(summary).toContain("Error Pressure");
-    expect(summary).toContain("Learning Mode");
+    expect(summary).toContain("Work Value");
   });
 
   it("uses plain language", () => {
@@ -33,7 +33,7 @@ describe("formatProfileSummary", () => {
     // Should contain level labels, not raw values
     expect(summary).toContain("Steady");
     expect(summary).toContain("Solo");
-    expect(summary).toContain("Hands-On");
+    expect(summary).toContain("Security");
   });
 });
 

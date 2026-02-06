@@ -6,8 +6,16 @@
  *   is experientially grounded, and is explainable without psychological jargon.
  * - "Social" is split into People Density (ambient presence) and
  *   Interaction Demand (required engagement) because they are independent stressors.
- * - Learning Mode is secondary: it never eliminates jobs, only explains matches
- *   or breaks ties.
+ * - Work Value is secondary: it never eliminates jobs, only ranks matches
+ *   or breaks ties. It captures what outcomes matter to the user (autonomy,
+ *   security, altruism, achievement) — a core construct in TWA and Super's theory.
+ *
+ * Note on primaryLoadType: This dimension intentionally crosses from environmental
+ * conditions into interest/activity domains (loosely mapping to Holland's RIASEC:
+ * physical ≈ Realistic, analytical ≈ Investigative, creative ≈ Artistic,
+ * organizational ≈ Enterprising/Conventional). It is the strongest differentiator
+ * in the model, which is why it is kept as a primary dimension despite being
+ * categorically different from the other 6 environmental-condition dimensions.
  */
 
 // ---------------------------------------------------------------------------
@@ -24,7 +32,7 @@ export const PRIMARY_DIMENSIONS = [
   "errorPressure",
 ] as const;
 
-export const SECONDARY_DIMENSIONS = ["learningMode"] as const;
+export const SECONDARY_DIMENSIONS = ["workValue"] as const;
 
 export const ALL_DIMENSIONS = [
   ...PRIMARY_DIMENSIONS,
@@ -46,7 +54,7 @@ export type SchedulePredictability = "predictable" | "variable" | "chaotic";
 export type RuleDensity = "loose" | "moderate" | "strict";
 export type PrimaryLoadType = "physical" | "analytical" | "creative" | "organizational";
 export type ErrorPressure = "low" | "moderate" | "high";
-export type LearningMode = "hands-on" | "verbal" | "abstract";
+export type WorkValue = "autonomy" | "security" | "altruism" | "achievement";
 
 export type DimensionLevel =
   | EnergyRhythm
@@ -56,7 +64,7 @@ export type DimensionLevel =
   | RuleDensity
   | PrimaryLoadType
   | ErrorPressure
-  | LearningMode;
+  | WorkValue;
 
 // ---------------------------------------------------------------------------
 // Dimension metadata — plain-language labels and descriptions
@@ -149,15 +157,16 @@ export const DIMENSION_META: Record<Dimension, DimensionMeta> = {
       { value: "high", label: "High", description: "Mistakes can be costly or dangerous" },
     ],
   },
-  learningMode: {
-    id: "learningMode",
-    label: "Learning Mode",
-    description: "How you best pick up new skills on the job.",
+  workValue: {
+    id: "workValue",
+    label: "Work Value",
+    description: "What matters most to you about work — what makes a job feel worthwhile.",
     isPrimary: false,
     levels: [
-      { value: "hands-on", label: "Hands-On", description: "Learn by doing and watching" },
-      { value: "verbal", label: "Verbal", description: "Learn by reading, listening, discussing" },
-      { value: "abstract", label: "Abstract", description: "Learn from models, diagrams, theory" },
+      { value: "autonomy", label: "Autonomy", description: "Freedom to do things your own way" },
+      { value: "security", label: "Security", description: "Steady income and a stable path" },
+      { value: "altruism", label: "Altruism", description: "Helping people or making a difference" },
+      { value: "achievement", label: "Achievement", description: "Being the best, getting recognized" },
     ],
   },
 } as const;

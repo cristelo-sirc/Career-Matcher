@@ -105,7 +105,7 @@ describe("resolveProfile", () => {
     expect(profile).toHaveProperty("ruleDensity");
     expect(profile).toHaveProperty("primaryLoadType");
     expect(profile).toHaveProperty("errorPressure");
-    expect(profile).toHaveProperty("learningMode");
+    expect(profile).toHaveProperty("workValue");
   });
 
   it("falls back to defaults when no signal is present", () => {
@@ -119,6 +119,6 @@ describe("resolveProfile", () => {
     expect(profile.ruleDensity).toBe("moderate");
     expect(profile.primaryLoadType).toBe("analytical");
     expect(profile.errorPressure).toBe("moderate");
-    expect(profile.learningMode).toBe("hands-on");
+    expect(profile.workValue).toBe("security");
   });
 });

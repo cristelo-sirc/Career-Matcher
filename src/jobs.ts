@@ -7,6 +7,13 @@
  *
  * Design rule: jobs are real, recognizable, and described in plain language
  * a teenager can understand.
+ *
+ * Work Value mapping heuristics:
+ * - Trades/physical roles → often security, sometimes achievement
+ * - Healthcare/people roles → often altruism, sometimes security
+ * - Creative roles → often autonomy, sometimes achievement
+ * - Analytical/organizational → often achievement, sometimes security
+ * - Most jobs accept 2 values (jobs are not monolithic).
  */
 
 import type { Job } from "./types.js";
@@ -25,7 +32,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["strict"],
       primaryLoadType: ["physical"],
       errorPressure: ["high"],
-      learningMode: ["hands-on"],
+      workValue: ["security", "achievement"],
     },
   },
   {
@@ -40,7 +47,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["moderate"],
       primaryLoadType: ["physical"],
       errorPressure: ["moderate"],
-      learningMode: ["hands-on"],
+      workValue: ["security", "autonomy"],
     },
   },
   {
@@ -55,7 +62,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["strict"],
       primaryLoadType: ["physical"],
       errorPressure: ["high"],
-      learningMode: ["hands-on"],
+      workValue: ["security", "achievement"],
     },
   },
   {
@@ -70,7 +77,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["loose"],
       primaryLoadType: ["physical"],
       errorPressure: ["low"],
-      learningMode: ["hands-on"],
+      workValue: ["autonomy", "security"],
     },
   },
   {
@@ -85,7 +92,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["moderate"],
       primaryLoadType: ["physical"],
       errorPressure: ["moderate"],
-      learningMode: ["hands-on"],
+      workValue: ["security", "achievement"],
     },
   },
 
@@ -102,7 +109,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["moderate"],
       primaryLoadType: ["analytical"],
       errorPressure: ["moderate"],
-      learningMode: ["abstract", "hands-on"],
+      workValue: ["achievement", "autonomy"],
     },
   },
   {
@@ -117,7 +124,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["strict"],
       primaryLoadType: ["analytical"],
       errorPressure: ["high"],
-      learningMode: ["hands-on", "abstract"],
+      workValue: ["achievement", "security"],
     },
   },
   {
@@ -132,7 +139,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["moderate"],
       primaryLoadType: ["analytical"],
       errorPressure: ["moderate"],
-      learningMode: ["abstract"],
+      workValue: ["achievement", "autonomy"],
     },
   },
   {
@@ -147,7 +154,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["strict"],
       primaryLoadType: ["analytical", "organizational"],
       errorPressure: ["high"],
-      learningMode: ["abstract", "verbal"],
+      workValue: ["security", "achievement"],
     },
   },
 
@@ -164,7 +171,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["loose"],
       primaryLoadType: ["creative"],
       errorPressure: ["low"],
-      learningMode: ["hands-on"],
+      workValue: ["autonomy", "achievement"],
     },
   },
   {
@@ -179,7 +186,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["loose"],
       primaryLoadType: ["creative"],
       errorPressure: ["low"],
-      learningMode: ["hands-on"],
+      workValue: ["autonomy", "achievement"],
     },
   },
   {
@@ -194,7 +201,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["moderate", "strict"],
       primaryLoadType: ["physical", "creative"],
       errorPressure: ["moderate"],
-      learningMode: ["hands-on"],
+      workValue: ["achievement", "autonomy"],
     },
   },
   {
@@ -209,7 +216,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["loose"],
       primaryLoadType: ["creative"],
       errorPressure: ["moderate"],
-      learningMode: ["hands-on"],
+      workValue: ["autonomy", "achievement"],
     },
   },
 
@@ -226,7 +233,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["moderate", "strict"],
       primaryLoadType: ["organizational"],
       errorPressure: ["moderate", "high"],
-      learningMode: ["verbal", "hands-on"],
+      workValue: ["security", "achievement"],
     },
   },
   {
@@ -241,7 +248,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["moderate"],
       primaryLoadType: ["organizational"],
       errorPressure: ["low", "moderate"],
-      learningMode: ["verbal"],
+      workValue: ["security", "altruism"],
     },
   },
   {
@@ -256,7 +263,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["loose", "moderate"],
       primaryLoadType: ["organizational", "creative"],
       errorPressure: ["moderate"],
-      learningMode: ["verbal", "hands-on"],
+      workValue: ["achievement", "autonomy"],
     },
   },
 
@@ -273,7 +280,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["strict"],
       primaryLoadType: ["physical"],
       errorPressure: ["moderate", "high"],
-      learningMode: ["hands-on"],
+      workValue: ["altruism", "security"],
     },
   },
   {
@@ -288,7 +295,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["strict"],
       primaryLoadType: ["physical"],
       errorPressure: ["high"],
-      learningMode: ["hands-on"],
+      workValue: ["altruism", "security"],
     },
   },
   {
@@ -303,7 +310,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["moderate"],
       primaryLoadType: ["organizational"],
       errorPressure: ["low"],
-      learningMode: ["verbal", "hands-on"],
+      workValue: ["security", "altruism"],
     },
   },
   {
@@ -318,7 +325,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["strict"],
       primaryLoadType: ["physical"],
       errorPressure: ["high"],
-      learningMode: ["hands-on"],
+      workValue: ["altruism", "achievement"],
     },
   },
 
@@ -335,7 +342,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["moderate"],
       primaryLoadType: ["physical", "organizational"],
       errorPressure: ["moderate"],
-      learningMode: ["hands-on"],
+      workValue: ["autonomy", "altruism"],
     },
   },
   {
@@ -350,7 +357,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["strict"],
       primaryLoadType: ["physical"],
       errorPressure: ["high"],
-      learningMode: ["hands-on"],
+      workValue: ["security", "autonomy"],
     },
   },
   {
@@ -365,7 +372,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["moderate"],
       primaryLoadType: ["organizational"],
       errorPressure: ["low"],
-      learningMode: ["verbal"],
+      workValue: ["altruism", "security"],
     },
   },
   {
@@ -380,7 +387,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["moderate", "strict"],
       primaryLoadType: ["physical"],
       errorPressure: ["moderate"],
-      learningMode: ["hands-on"],
+      workValue: ["security"],
     },
   },
   {
@@ -395,7 +402,7 @@ export const JOBS: readonly Job[] = [
       ruleDensity: ["moderate"],
       primaryLoadType: ["analytical"],
       errorPressure: ["moderate"],
-      learningMode: ["hands-on", "abstract"],
+      workValue: ["achievement", "altruism"],
     },
   },
 ] as const;

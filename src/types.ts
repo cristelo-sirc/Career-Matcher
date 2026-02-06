@@ -12,7 +12,7 @@ import type {
   RuleDensity,
   PrimaryLoadType,
   ErrorPressure,
-  LearningMode,
+  WorkValue,
 } from "./dimensions.js";
 
 // ---------------------------------------------------------------------------
@@ -28,7 +28,7 @@ export interface JobDimensionProfile {
   ruleDensity: readonly RuleDensity[];
   primaryLoadType: readonly PrimaryLoadType[];
   errorPressure: readonly ErrorPressure[];
-  learningMode: readonly LearningMode[];
+  workValue: readonly WorkValue[];
 }
 
 export interface Job {
@@ -51,7 +51,7 @@ export interface UserDimensionProfile {
   ruleDensity: RuleDensity;
   primaryLoadType: PrimaryLoadType;
   errorPressure: ErrorPressure;
-  learningMode: LearningMode;
+  workValue: WorkValue;
 }
 
 // ---------------------------------------------------------------------------

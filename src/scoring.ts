@@ -97,6 +97,6 @@ export function resolveProfile(scores: DimensionScores): UserDimensionProfile {
     ruleDensity: (resolveLevel(scores.ruleDensity) ?? "moderate") as UserDimensionProfile["ruleDensity"],
     primaryLoadType: (resolveLevel(scores.primaryLoadType) ?? "analytical") as UserDimensionProfile["primaryLoadType"],
     errorPressure: (resolveLevel(scores.errorPressure) ?? "moderate") as UserDimensionProfile["errorPressure"],
-    learningMode: (resolveLevel(scores.learningMode) ?? "hands-on") as UserDimensionProfile["learningMode"],
+    workValue: (resolveLevel(scores.workValue) ?? "security") as UserDimensionProfile["workValue"],
   };
 }

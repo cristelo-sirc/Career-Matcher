@@ -3,7 +3,7 @@
  *
  * Design rules:
  * - Elimination before optimization: rule out bad fits first.
- * - Primary dimensions eliminate; secondary (Learning Mode) only ranks.
+ * - Primary dimensions eliminate; secondary (Work Value) only ranks.
  * - Every result is explainable in plain language.
  * - No black boxes.
  */
@@ -91,19 +91,19 @@ export function scoreJob(
     eliminated = true;
   }
 
-  // --- Secondary dimension: Learning Mode (never eliminates) ---
-  const lmAccepts = jobAcceptsLevel(job, "learningMode", profile.learningMode);
-  if (lmAccepts) {
+  // --- Secondary dimension: Work Value (never eliminates) ---
+  const wvAccepts = jobAcceptsLevel(job, "workValue", profile.workValue);
+  if (wvAccepts) {
     fitReasons.push(
-      `Learning Mode: this job supports ${levelLabel("learningMode", profile.learningMode).toLowerCase()} learning`,
+      `Work Value: this job aligns with your value of ${levelLabel("workValue", profile.workValue).toLowerCase()}`,
     );
   }
 
   // --- Compute fit score ---
   // Primary dimensions: each match contributes equally
-  // Learning Mode: small bonus (not an eliminator)
+  // Work Value: small bonus (not an eliminator)
   const primaryScore = primaryMatches / primaryCount;
-  const secondaryBonus = lmAccepts ? 0.05 : 0;
+  const secondaryBonus = wvAccepts ? 0.05 : 0;
   const fitScore = Math.min(1, primaryScore * 0.95 + secondaryBonus);
 
   return { job, fitScore, fitReasons, frictionPoints, eliminated };

@@ -16,7 +16,7 @@ const quietBuilder: UserDimensionProfile = {
   ruleDensity: "moderate",
   primaryLoadType: "physical",
   errorPressure: "moderate",
-  learningMode: "hands-on",
+  workValue: "security",
 };
 
 /** Social organizer — loves people, coordination, variable schedules. */
@@ -28,7 +28,7 @@ const socialOrganizer: UserDimensionProfile = {
   ruleDensity: "loose",
   primaryLoadType: "organizational",
   errorPressure: "low",
-  learningMode: "verbal",
+  workValue: "achievement",
 };
 
 /** Careful analyst — prefers solo analytical work with high precision. */
@@ -40,7 +40,7 @@ const carefulAnalyst: UserDimensionProfile = {
   ruleDensity: "strict",
   primaryLoadType: "analytical",
   errorPressure: "high",
-  learningMode: "abstract",
+  workValue: "achievement",
 };
 
 /** Creative burst worker — solo, creative, loose rules. */
@@ -52,7 +52,7 @@ const creativeBurst: UserDimensionProfile = {
   ruleDensity: "loose",
   primaryLoadType: "creative",
   errorPressure: "low",
-  learningMode: "hands-on",
+  workValue: "security",
 };
 
 // ---------------------------------------------------------------------------

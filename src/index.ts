@@ -27,7 +27,7 @@ export type {
   RuleDensity,
   PrimaryLoadType,
   ErrorPressure,
-  LearningMode,
+  WorkValue,
 } from "./dimensions.js";
 
 // Types
