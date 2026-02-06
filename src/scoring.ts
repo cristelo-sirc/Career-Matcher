@@ -40,25 +40,43 @@ export function applyNudge(
   bucket[option.nudgeToward] = (bucket[option.nudgeToward] ?? 0) + option.weight;
 }
 
+/** Result of processing all user responses. */
+export interface ProcessResponsesResult {
+  scores: DimensionScores;
+  /** Warnings about invalid or out-of-bounds response indices. */
+  warnings: string[];
+}
+
 /**
  * Process all user responses at once.
  *
  * `responses` maps prompt ID → the index of the chosen option.
+ *
+ * Returns both the accumulated scores and any warnings (e.g., if a
+ * response index is out of bounds for a prompt's option list).
  */
 export function processResponses(
   prompts: readonly SituationalPrompt[],
   responses: Record<string, number>,
-): DimensionScores {
+): ProcessResponsesResult {
   const scores = createEmptyScores();
+  const warnings: string[] = [];
+
   for (const prompt of prompts) {
     const chosenIndex = responses[prompt.id];
     if (chosenIndex == null) continue;
+
     const option = prompt.options[chosenIndex];
     if (option) {
       applyNudge(scores, option);
+    } else {
+      warnings.push(
+        `Prompt "${prompt.id}": chosen index ${chosenIndex} is out of bounds (${prompt.options.length} options available)`,
+      );
     }
   }
-  return scores;
+
+  return { scores, warnings };
 }
 
 // ---------------------------------------------------------------------------
@@ -67,7 +85,10 @@ export function processResponses(
 
 /**
  * For a single dimension, pick the level with the highest accumulated score.
- * Ties are broken by returning the first-encountered winner (stable order).
+ *
+ * Ties are broken by insertion order — the first key added to the bucket
+ * wins. This is guaranteed by the ES2015+ spec for string keys: object
+ * property iteration follows insertion order for non-integer keys.
  */
 export function resolveLevel(bucket: Record<string, number>): string | null {
   let best: string | null = null;

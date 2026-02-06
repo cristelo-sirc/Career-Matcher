@@ -53,6 +53,7 @@ export {
   resolveLevel,
   resolveProfile,
 } from "./scoring.js";
+export type { ProcessResponsesResult } from "./scoring.js";
 
 // Matching
 export { scoreJob, matchJobs } from "./matcher.js";
@@ -60,3 +61,6 @@ export { scoreJob, matchJobs } from "./matcher.js";
 // Results
 export { fitBand, formatResults, formatProfileSummary, renderResultsAsText } from "./results.js";
 export type { FormattedResults, FormattedMatch } from "./results.js";
+
+// Validation
+export { validateDataIntegrity } from "./validate.js";

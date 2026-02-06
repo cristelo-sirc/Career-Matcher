@@ -71,7 +71,9 @@ describe("processResponses", () => {
     for (const prompt of PROMPTS) {
       responses[prompt.id] = 0;
     }
-    const scores = processResponses(PROMPTS, responses);
+    const { scores, warnings } = processResponses(PROMPTS, responses);
+
+    expect(warnings).toEqual([]);
 
     // Every dimension should have at least some signal
     for (const dim of ALL_DIMENSIONS) {
@@ -81,11 +83,19 @@ describe("processResponses", () => {
   });
 
   it("skips prompts without a response", () => {
-    const scores = processResponses(PROMPTS, {});
+    const { scores, warnings } = processResponses(PROMPTS, {});
+    expect(warnings).toEqual([]);
     for (const dim of ALL_DIMENSIONS) {
       const totalSignal = Object.values(scores[dim]).reduce((s, v) => s + v, 0);
       expect(totalSignal).toBe(0);
     }
+  });
+
+  it("warns on out-of-bounds option index", () => {
+    const { warnings } = processResponses(PROMPTS, { "er-1": 99 });
+    expect(warnings.length).toBe(1);
+    expect(warnings[0]).toContain("er-1");
+    expect(warnings[0]).toContain("out of bounds");
   });
 });
 
@@ -95,7 +105,7 @@ describe("resolveProfile", () => {
     for (const prompt of PROMPTS) {
       responses[prompt.id] = 0;
     }
-    const scores = processResponses(PROMPTS, responses);
+    const { scores } = processResponses(PROMPTS, responses);
     const profile = resolveProfile(scores);
 
     expect(profile).toHaveProperty("energyRhythm");
