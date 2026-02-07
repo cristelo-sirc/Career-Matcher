@@ -63,6 +63,55 @@ export const PROMPTS: readonly SituationalPrompt[] = [
     ],
   },
 
+  {
+    id: "er-3",
+    scenario: "After a long, busy stretch, you finally get a slow day. How do you feel?",
+    options: [
+      {
+        text: "Relieved — slow days are when I recharge before the next push",
+        dimension: "energyRhythm",
+        nudgeToward: "burst",
+        weight: 1,
+      },
+      {
+        text: "A little bored — I prefer keeping a consistent rhythm",
+        dimension: "energyRhythm",
+        nudgeToward: "steady",
+        weight: 1,
+      },
+      {
+        text: "Depends — sometimes I welcome it, sometimes I don't",
+        dimension: "energyRhythm",
+        nudgeToward: "mixed",
+        weight: 0.7,
+      },
+    ],
+  },
+  {
+    id: "er-4",
+    scenario: "You're training for something important (a sport, a skill, a test). How do you prepare?",
+    options: [
+      {
+        text: "Some days I go hard, other days I barely touch it — no pattern",
+        dimension: "energyRhythm",
+        nudgeToward: "mixed",
+        weight: 0.8,
+      },
+      {
+        text: "Practice a set amount every single day",
+        dimension: "energyRhythm",
+        nudgeToward: "steady",
+        weight: 1,
+      },
+      {
+        text: "Cram in intense sessions with rest days in between",
+        dimension: "energyRhythm",
+        nudgeToward: "burst",
+        weight: 1,
+      },
+    ],
+  },
+
   // ---- People Density ----
   {
     id: "pd-1",
@@ -108,6 +157,55 @@ export const PROMPTS: readonly SituationalPrompt[] = [
         text: "Actually helpful — I like background buzz",
         dimension: "peopleDensity",
         nudgeToward: "crowd",
+        weight: 1,
+      },
+    ],
+  },
+
+  {
+    id: "pd-3",
+    scenario: "You're picking a lunch spot on a work day. Where do you go?",
+    options: [
+      {
+        text: "A packed food court — I like the energy",
+        dimension: "peopleDensity",
+        nudgeToward: "crowd",
+        weight: 1,
+      },
+      {
+        text: "A small table with one or two coworkers",
+        dimension: "peopleDensity",
+        nudgeToward: "small-group",
+        weight: 1,
+      },
+      {
+        text: "Somewhere I can sit alone and decompress",
+        dimension: "peopleDensity",
+        nudgeToward: "solo",
+        weight: 1,
+      },
+    ],
+  },
+  {
+    id: "pd-4",
+    scenario: "Your ideal workspace has…",
+    options: [
+      {
+        text: "A few familiar faces nearby — not too empty, not too packed",
+        dimension: "peopleDensity",
+        nudgeToward: "small-group",
+        weight: 0.8,
+      },
+      {
+        text: "Constant foot traffic and activity all around me",
+        dimension: "peopleDensity",
+        nudgeToward: "crowd",
+        weight: 1,
+      },
+      {
+        text: "A closed door and total silence",
+        dimension: "peopleDensity",
+        nudgeToward: "solo",
         weight: 1,
       },
     ],
@@ -163,6 +261,55 @@ export const PROMPTS: readonly SituationalPrompt[] = [
     ],
   },
 
+  {
+    id: "id-3",
+    scenario: "At the end of a day at work, what leaves you most drained?",
+    options: [
+      {
+        text: "Nonstop conversations — I need alone time to recover",
+        dimension: "interactionDemand",
+        nudgeToward: "minimal",
+        weight: 0.8,
+      },
+      {
+        text: "Too much isolation — I wish I'd talked to more people",
+        dimension: "interactionDemand",
+        nudgeToward: "constant",
+        weight: 0.8,
+      },
+      {
+        text: "Neither — a normal mix of talking and quiet time is fine",
+        dimension: "interactionDemand",
+        nudgeToward: "moderate",
+        weight: 0.7,
+      },
+    ],
+  },
+  {
+    id: "id-4",
+    scenario: "You're working on a group project. What role do you naturally take?",
+    options: [
+      {
+        text: "The connector — I keep everyone talking and aligned",
+        dimension: "interactionDemand",
+        nudgeToward: "constant",
+        weight: 1,
+      },
+      {
+        text: "The solo contributor — I take my part and work on it alone",
+        dimension: "interactionDemand",
+        nudgeToward: "minimal",
+        weight: 1,
+      },
+      {
+        text: "Somewhere in between — I check in but also need heads-down time",
+        dimension: "interactionDemand",
+        nudgeToward: "moderate",
+        weight: 0.8,
+      },
+    ],
+  },
+
   // ---- Schedule Predictability ----
   {
     id: "sp-1",
@@ -208,6 +355,55 @@ export const PROMPTS: readonly SituationalPrompt[] = [
         text: "Excited — change keeps things interesting",
         dimension: "schedulePredictability",
         nudgeToward: "chaotic",
+        weight: 1,
+      },
+    ],
+  },
+
+  {
+    id: "sp-3",
+    scenario: "You're offered a side gig. Which schedule sounds most appealing?",
+    options: [
+      {
+        text: "Totally unpredictable — you're on call and it could be any time",
+        dimension: "schedulePredictability",
+        nudgeToward: "chaotic",
+        weight: 1,
+      },
+      {
+        text: "Same shift every week, no surprises",
+        dimension: "schedulePredictability",
+        nudgeToward: "predictable",
+        weight: 1,
+      },
+      {
+        text: "Mostly regular, but occasionally you get called in for something urgent",
+        dimension: "schedulePredictability",
+        nudgeToward: "variable",
+        weight: 0.8,
+      },
+    ],
+  },
+  {
+    id: "sp-4",
+    scenario: "On vacation, do you prefer to…",
+    options: [
+      {
+        text: "Have a rough plan but leave room for spontaneous adventures",
+        dimension: "schedulePredictability",
+        nudgeToward: "variable",
+        weight: 0.8,
+      },
+      {
+        text: "Wing it completely — no itinerary, just go",
+        dimension: "schedulePredictability",
+        nudgeToward: "chaotic",
+        weight: 1,
+      },
+      {
+        text: "Plan every day so I don't waste time figuring things out",
+        dimension: "schedulePredictability",
+        nudgeToward: "predictable",
         weight: 1,
       },
     ],
@@ -259,6 +455,55 @@ export const PROMPTS: readonly SituationalPrompt[] = [
         dimension: "ruleDensity",
         nudgeToward: "strict",
         weight: 1,
+      },
+    ],
+  },
+
+  {
+    id: "rd-3",
+    scenario: "You just started a new hobby. How do you want to learn it?",
+    options: [
+      {
+        text: "Follow a detailed course with clear steps and milestones",
+        dimension: "ruleDensity",
+        nudgeToward: "strict",
+        weight: 1,
+      },
+      {
+        text: "Just dive in and experiment — rules slow me down",
+        dimension: "ruleDensity",
+        nudgeToward: "loose",
+        weight: 1,
+      },
+      {
+        text: "Get the basics from someone, then explore on my own",
+        dimension: "ruleDensity",
+        nudgeToward: "moderate",
+        weight: 0.8,
+      },
+    ],
+  },
+  {
+    id: "rd-4",
+    scenario: "Your team has no official process for handling requests — everyone does it differently. How do you feel?",
+    options: [
+      {
+        text: "Fine — flexibility means I can do what works for me",
+        dimension: "ruleDensity",
+        nudgeToward: "loose",
+        weight: 0.8,
+      },
+      {
+        text: "Annoyed — someone should write a standard procedure",
+        dimension: "ruleDensity",
+        nudgeToward: "strict",
+        weight: 1,
+      },
+      {
+        text: "A little bothered, but I can live with loose guidelines",
+        dimension: "ruleDensity",
+        nudgeToward: "moderate",
+        weight: 0.7,
       },
     ],
   },
@@ -325,25 +570,88 @@ export const PROMPTS: readonly SituationalPrompt[] = [
     ],
   },
 
-  // ---- Error Pressure ----
   {
-    id: "ep-1",
-    scenario: "You make a mistake at work. Which reaction fits you best?",
+    id: "plt-3",
+    scenario: "A friend asks for help with something. Which request gets you most excited?",
     options: [
       {
-        text: "No big deal — I fix it and move on",
+        text: "Help me organize my move — I need a plan and a timeline",
+        dimension: "primaryLoadType",
+        nudgeToward: "organizational",
+        weight: 0.8,
+      },
+      {
+        text: "Help me figure out why my code isn't working",
+        dimension: "primaryLoadType",
+        nudgeToward: "analytical",
+        weight: 0.8,
+      },
+      {
+        text: "Help me build a shelf for my room",
+        dimension: "primaryLoadType",
+        nudgeToward: "physical",
+        weight: 0.8,
+      },
+      {
+        text: "Help me design a poster for my band",
+        dimension: "primaryLoadType",
+        nudgeToward: "creative",
+        weight: 0.8,
+      },
+    ],
+  },
+  {
+    id: "plt-4",
+    scenario: "You're daydreaming about a perfect work day. What are you doing?",
+    options: [
+      {
+        text: "Designing or making something that didn't exist before",
+        dimension: "primaryLoadType",
+        nudgeToward: "creative",
+        weight: 1,
+      },
+      {
+        text: "Working with my hands — fixing, building, or assembling",
+        dimension: "primaryLoadType",
+        nudgeToward: "physical",
+        weight: 1,
+      },
+      {
+        text: "Coordinating a project and keeping everyone on schedule",
+        dimension: "primaryLoadType",
+        nudgeToward: "organizational",
+        weight: 1,
+      },
+      {
+        text: "Digging into a tough problem and finding the answer",
+        dimension: "primaryLoadType",
+        nudgeToward: "analytical",
+        weight: 1,
+      },
+    ],
+  },
+
+  // ---- Error Pressure ----
+  // Rewritten to measure tolerance for high-stakes environments, not emotional
+  // reaction to mistakes. Frames as preference between environments.
+  {
+    id: "ep-1",
+    scenario: "Imagine two jobs. One is low-stakes — if you mess up, it's easy to fix. The other is high-stakes — mistakes are costly but the work is more respected. Which appeals to you more?",
+    options: [
+      {
+        text: "The low-stakes job — I'd rather not have that pressure",
         dimension: "errorPressure",
         nudgeToward: "low",
         weight: 1,
       },
       {
-        text: "I feel bad but I can handle it if it's recoverable",
+        text: "Something in between — some stakes are fine, but not life-or-death",
         dimension: "errorPressure",
         nudgeToward: "moderate",
-        weight: 1,
+        weight: 0.8,
       },
       {
-        text: "I'd rather get it right the first time — mistakes stress me out",
+        text: "The high-stakes job — I like that the work really matters",
         dimension: "errorPressure",
         nudgeToward: "high",
         weight: 1,
@@ -352,22 +660,22 @@ export const PROMPTS: readonly SituationalPrompt[] = [
   },
   {
     id: "ep-2",
-    scenario: "Would you rather work somewhere mistakes are easy to fix, or somewhere getting it exactly right matters a lot?",
+    scenario: "You're choosing between two projects. One has no real consequences if it goes wrong. The other matters a lot and people are counting on you. Which do you pick?",
     options: [
       {
-        text: "Easy to fix — I like low-pressure work",
+        text: "The one with no real consequences — less pressure, more fun",
         dimension: "errorPressure",
         nudgeToward: "low",
         weight: 1,
       },
       {
-        text: "Somewhere in between — mistakes matter but aren't the end of the world",
+        text: "Either is fine — I can handle some pressure but don't need it",
         dimension: "errorPressure",
         nudgeToward: "moderate",
         weight: 0.8,
       },
       {
-        text: "Exactly right — I take pride in precision",
+        text: "The one that matters — I want to do work people depend on",
         dimension: "errorPressure",
         nudgeToward: "high",
         weight: 1,
@@ -375,51 +683,172 @@ export const PROMPTS: readonly SituationalPrompt[] = [
     ],
   },
 
-  // ---- Learning Mode (secondary) ----
   {
-    id: "lm-1",
-    scenario: "You need to learn how to use a new tool. What's your first move?",
+    id: "ep-3",
+    scenario: "A friend describes their job: 'If I mess up, someone could get hurt.' How does that sound to you?",
     options: [
       {
-        text: "Grab it and start experimenting",
-        dimension: "learningMode",
-        nudgeToward: "hands-on",
+        text: "Honestly, that kind of responsibility appeals to me",
+        dimension: "errorPressure",
+        nudgeToward: "high",
         weight: 1,
       },
       {
-        text: "Watch a video or ask someone to walk me through it",
-        dimension: "learningMode",
-        nudgeToward: "verbal",
-        weight: 1,
+        text: "I'd accept some responsibility, but not that level",
+        dimension: "errorPressure",
+        nudgeToward: "moderate",
+        weight: 0.8,
       },
       {
-        text: "Read the manual or look up how it works first",
-        dimension: "learningMode",
-        nudgeToward: "abstract",
+        text: "No thanks — I'd rather do work where the stakes are lower",
+        dimension: "errorPressure",
+        nudgeToward: "low",
         weight: 1,
       },
     ],
   },
   {
-    id: "lm-2",
-    scenario: "In class, which style helps you understand something new best?",
+    id: "ep-4",
+    scenario: "You're deciding between two summer jobs. One is relaxed — nobody checks your work closely. The other has quality inspections and your name goes on everything you do. Which one?",
     options: [
       {
-        text: "Labs, demos, or hands-on activities",
-        dimension: "learningMode",
-        nudgeToward: "hands-on",
+        text: "The one where my name is on it — I want my work to count",
+        dimension: "errorPressure",
+        nudgeToward: "high",
+        weight: 1,
+      },
+      {
+        text: "The relaxed one — I'd rather not be under a microscope",
+        dimension: "errorPressure",
+        nudgeToward: "low",
+        weight: 1,
+      },
+      {
+        text: "Either way — I do good work regardless of who's watching",
+        dimension: "errorPressure",
+        nudgeToward: "moderate",
+        weight: 0.7,
+      },
+    ],
+  },
+
+  // ---- Work Value (secondary) ----
+  {
+    id: "wv-1",
+    scenario: "You get to pick one reward for a job well done. Which sounds best?",
+    options: [
+      {
+        text: "A bonus or award that everyone sees",
+        dimension: "workValue",
+        nudgeToward: "achievement",
+        weight: 1,
+      },
+      {
+        text: "A more flexible schedule — work when and how you want",
+        dimension: "workValue",
+        nudgeToward: "autonomy",
+        weight: 1,
+      },
+      {
+        text: "A heartfelt thank-you from someone you really helped",
+        dimension: "workValue",
+        nudgeToward: "altruism",
+        weight: 1,
+      },
+      {
+        text: "A guaranteed contract renewal — you know you're set",
+        dimension: "workValue",
+        nudgeToward: "security",
+        weight: 1,
+      },
+    ],
+  },
+  {
+    id: "wv-2",
+    scenario: "Two jobs pay the same. Which one do you pick?",
+    options: [
+      {
+        text: "The one where you're your own boss and set your own priorities",
+        dimension: "workValue",
+        nudgeToward: "autonomy",
+        weight: 1,
+      },
+      {
+        text: "The one that's rock-solid stable — it'll be there for decades",
+        dimension: "workValue",
+        nudgeToward: "security",
+        weight: 1,
+      },
+      {
+        text: "The one where you directly improve people's lives every day",
+        dimension: "workValue",
+        nudgeToward: "altruism",
+        weight: 1,
+      },
+      {
+        text: "The one where top performers get promoted fast and recognized publicly",
+        dimension: "workValue",
+        nudgeToward: "achievement",
+        weight: 1,
+      },
+    ],
+  },
+  {
+    id: "wv-3",
+    scenario: "You're looking back on a great year at work. What made it great?",
+    options: [
+      {
+        text: "I helped people through tough situations — they told me it mattered",
+        dimension: "workValue",
+        nudgeToward: "altruism",
+        weight: 1,
+      },
+      {
+        text: "I hit every target and got promoted ahead of my peers",
+        dimension: "workValue",
+        nudgeToward: "achievement",
+        weight: 1,
+      },
+      {
+        text: "I had total control over my projects and schedule",
+        dimension: "workValue",
+        nudgeToward: "autonomy",
+        weight: 1,
+      },
+      {
+        text: "I felt safe — steady paycheck, good benefits, no layoff scares",
+        dimension: "workValue",
+        nudgeToward: "security",
+        weight: 1,
+      },
+    ],
+  },
+  {
+    id: "wv-4",
+    scenario: "If you could change one thing about a future job, what would it be?",
+    options: [
+      {
+        text: "More job security — I want to know it'll last",
+        dimension: "workValue",
+        nudgeToward: "security",
         weight: 0.8,
       },
       {
-        text: "Group discussion or a teacher explaining it well",
-        dimension: "learningMode",
-        nudgeToward: "verbal",
+        text: "More chances to help others directly",
+        dimension: "workValue",
+        nudgeToward: "altruism",
         weight: 0.8,
       },
       {
-        text: "Diagrams, charts, or reading it myself",
-        dimension: "learningMode",
-        nudgeToward: "abstract",
+        text: "More freedom to make my own decisions",
+        dimension: "workValue",
+        nudgeToward: "autonomy",
+        weight: 0.8,
+      },
+      {
+        text: "More recognition for great work",
+        dimension: "workValue",
+        nudgeToward: "achievement",
         weight: 0.8,
       },
     ],

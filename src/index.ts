@@ -27,7 +27,7 @@ export type {
   RuleDensity,
   PrimaryLoadType,
   ErrorPressure,
-  LearningMode,
+  WorkValue,
 } from "./dimensions.js";
 
 // Types
@@ -37,6 +37,7 @@ export type {
   UserDimensionProfile,
   SituationalPrompt,
   PromptOption,
+  DimensionLevelMap,
   DimensionScores,
   MatchResult,
 } from "./types.js";
@@ -52,11 +53,16 @@ export {
   processResponses,
   resolveLevel,
   resolveProfile,
+  createShuffledPrompts,
 } from "./scoring.js";
+export type { ProcessResponsesResult } from "./scoring.js";
 
 // Matching
 export { scoreJob, matchJobs } from "./matcher.js";
 
 // Results
-export { formatResults, formatProfileSummary, renderResultsAsText } from "./results.js";
+export { fitBand, formatResults, formatProfileSummary, renderResultsAsText } from "./results.js";
 export type { FormattedResults, FormattedMatch } from "./results.js";
+
+// Validation
+export { validateDataIntegrity } from "./validate.js";

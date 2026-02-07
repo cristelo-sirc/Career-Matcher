@@ -7,10 +7,25 @@
  * - Every result is explainable in plain language.
  * - Teens and parents should understand *why* a job appears or disappears.
  * - Jobs first, not traits.
+ * - Ordinal fit bands, not percentages — the measurement cannot support
+ *   quantitative precision claims.
+ * - Exploration language, not foreclosure — "less likely" not "ruled out."
  */
 
 import { DIMENSION_META, type Dimension } from "./dimensions.js";
 import type { MatchResult, UserDimensionProfile } from "./types.js";
+
+// ---------------------------------------------------------------------------
+// Fit bands — ordinal categories replacing false-precision percentages
+// ---------------------------------------------------------------------------
+
+/** Map a 0–1 fitScore to an ordinal fit band label. */
+export function fitBand(fitScore: number): string {
+  if (fitScore >= 0.85) return "Strong fit";
+  if (fitScore >= 0.65) return "Possible fit";
+  if (fitScore >= 0.45) return "Stretch";
+  return "Unlikely fit";
+}
 
 // ---------------------------------------------------------------------------
 // Profile summary — human-readable summary of the user's profile
@@ -44,9 +59,16 @@ export interface FormattedMatch {
   rank: number;
   title: string;
   description: string;
+  /** Kept for internal/debug use — not displayed to end users. */
   fitPercent: number;
+  /** Ordinal fit category shown to users. */
+  fitBand: string;
   fitReasons: string[];
   frictionPoints: string[];
+  /** Informational metadata — does not affect scoring or elimination. */
+  outlookNote?: string;
+  /** Informational metadata — does not affect scoring or elimination. */
+  typicalEducation?: string;
 }
 
 /**
@@ -71,8 +93,11 @@ export function formatResults(
     title: r.job.title,
     description: r.job.shortDescription,
     fitPercent: Math.round(r.fitScore * 100),
+    fitBand: fitBand(r.fitScore),
     fitReasons: r.fitReasons,
     frictionPoints: r.frictionPoints,
+    outlookNote: r.job.outlookNote,
+    typicalEducation: r.job.typicalEducation,
   }));
 
   const eliminatedFormatted: FormattedMatch[] = eliminated.map((r, i) => ({
@@ -80,8 +105,11 @@ export function formatResults(
     title: r.job.title,
     description: r.job.shortDescription,
     fitPercent: Math.round(r.fitScore * 100),
+    fitBand: fitBand(r.fitScore),
     fitReasons: r.fitReasons,
     frictionPoints: r.frictionPoints,
+    outlookNote: r.job.outlookNote,
+    typicalEducation: r.job.typicalEducation,
   }));
 
   return {
@@ -98,6 +126,12 @@ export function formatResults(
 export function renderResultsAsText(formatted: FormattedResults): string {
   const lines: string[] = [];
 
+  // Scope disclaimer
+  lines.push("This tool explores which work environments might suit you based on your");
+  lines.push("preferences today. It is not a career assessment or aptitude test. Use these");
+  lines.push("results as a starting point for conversations, not as a final answer.");
+  lines.push("");
+
   lines.push(formatted.profileSummary);
   lines.push("");
   lines.push("=".repeat(60));
@@ -110,7 +144,7 @@ export function renderResultsAsText(formatted: FormattedResults): string {
 
   for (const match of formatted.topMatches) {
     lines.push("");
-    lines.push(`  #${match.rank}  ${match.title} (${match.fitPercent}% fit)`);
+    lines.push(`  #${match.rank}  ${match.title} (${match.fitBand})`);
     lines.push(`       ${match.description}`);
     lines.push("");
     for (const reason of match.fitReasons) {
@@ -119,12 +153,21 @@ export function renderResultsAsText(formatted: FormattedResults): string {
     for (const friction of match.frictionPoints) {
       lines.push(`       - ${friction}`);
     }
+    if (match.typicalEducation || match.outlookNote) {
+      lines.push("");
+      if (match.typicalEducation) {
+        lines.push(`       Education: ${match.typicalEducation}`);
+      }
+      if (match.outlookNote) {
+        lines.push(`       Outlook: ${match.outlookNote}`);
+      }
+    }
   }
 
   if (formatted.eliminated.length > 0) {
     lines.push("");
     lines.push("-".repeat(60));
-    lines.push("Ruled Out (not a great fit right now)");
+    lines.push("Less Likely Fits (based on your current preferences)");
     lines.push("-".repeat(60));
 
     for (const match of formatted.eliminated.slice(0, 5)) {
@@ -135,6 +178,9 @@ export function renderResultsAsText(formatted: FormattedResults): string {
       }
     }
   }
+
+  lines.push("");
+  lines.push("These results reflect your preferences today — they may change as you gain experience.");
 
   return lines.join("\n");
 }

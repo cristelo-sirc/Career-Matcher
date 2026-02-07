@@ -12,7 +12,7 @@ import type {
   RuleDensity,
   PrimaryLoadType,
   ErrorPressure,
-  LearningMode,
+  WorkValue,
 } from "./dimensions.js";
 
 // ---------------------------------------------------------------------------
@@ -28,7 +28,7 @@ export interface JobDimensionProfile {
   ruleDensity: readonly RuleDensity[];
   primaryLoadType: readonly PrimaryLoadType[];
   errorPressure: readonly ErrorPressure[];
-  learningMode: readonly LearningMode[];
+  workValue: readonly WorkValue[];
 }
 
 export interface Job {
@@ -37,6 +37,10 @@ export interface Job {
   /** One-sentence plain-language description a teen can understand. */
   shortDescription: string;
   profile: JobDimensionProfile;
+  /** Informational only — does not affect scoring or elimination. */
+  outlookNote?: string;
+  /** Informational only — does not affect scoring or elimination. */
+  typicalEducation?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -51,7 +55,7 @@ export interface UserDimensionProfile {
   ruleDensity: RuleDensity;
   primaryLoadType: PrimaryLoadType;
   errorPressure: ErrorPressure;
-  learningMode: LearningMode;
+  workValue: WorkValue;
 }
 
 // ---------------------------------------------------------------------------
@@ -81,8 +85,27 @@ export interface SituationalPrompt {
 // Scoring types
 // ---------------------------------------------------------------------------
 
-/** Accumulated nudge scores per dimension level during the prompt phase. */
-export type DimensionScores = Record<Dimension, Record<string, number>>;
+/** Maps each dimension to its valid level union type. */
+export type DimensionLevelMap = {
+  energyRhythm: EnergyRhythm;
+  peopleDensity: PeopleDensity;
+  interactionDemand: InteractionDemand;
+  schedulePredictability: SchedulePredictability;
+  ruleDensity: RuleDensity;
+  primaryLoadType: PrimaryLoadType;
+  errorPressure: ErrorPressure;
+  workValue: WorkValue;
+};
+
+/**
+ * Accumulated nudge scores per dimension level during the prompt phase.
+ *
+ * Each dimension maps to a partial record of its valid levels → accumulated
+ * weight. Partial because only levels that have been nudged will have entries.
+ */
+export type DimensionScores = {
+  [D in Dimension]: Partial<Record<DimensionLevelMap[D], number>>;
+};
 
 /** A single match result returned to the user. */
 export interface MatchResult {
