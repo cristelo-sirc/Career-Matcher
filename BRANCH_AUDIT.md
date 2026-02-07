@@ -320,22 +320,19 @@ The following consolidation actions were executed:
    - This audit document
    - 78 tests passing
 
-4. **Created `cleanup-branches.sh`** — an interactive script to delete the 4 redundant remote branches.
+### Remaining (manual — via GitHub website)
 
-### Remaining (requires manual action)
+Delete these 4 remote branches from the GitHub branches page
+(`https://github.com/cristelo-sirc/Career-Matcher/branches`) by clicking the
+trash can icon next to each one:
 
-Session permissions prevented remote branch deletion. Run the cleanup script to finish:
-
-```bash
-./cleanup-branches.sh
-```
-
-This will delete these remote branches (with confirmation prompt):
 - `claude/review-project-design-TBQDW` — exact duplicate
 - `claude/career-matcher-foundation-HWrR7` — subset (no unique content)
 - `claude/review-dev-plan-W9AVA` — unique content already merged
 - `claude/review-dev-plan-ubpu4` — all content merged into this branch
 
+**Do NOT delete** `claude/audit-branch-organization-K2YjW` — that is the consolidated branch with all work.
+
 ### Post-cleanup state
 
-After running the script, the repository will have a single branch (`audit-branch-organization-K2YjW`) containing all work. This can then be merged into `main` to establish a clean starting point for web app development.
+After deleting those branches, the repository will have a single branch (`audit-branch-organization-K2YjW`) containing all work. This can then be merged into `main` to establish a clean starting point for web app development.
