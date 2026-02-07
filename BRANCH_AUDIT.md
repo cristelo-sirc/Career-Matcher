@@ -299,3 +299,43 @@ For a quick reference, here is the current state of the project (on the most adv
 **Not yet built:**
 - Web application (Next.js) — planned in 11 phases in CLAUDE.md but no code written yet
 - No frontend, no UI, no routing, no deployment
+
+---
+
+## 8. Actions Taken (2026-02-07)
+
+The following consolidation actions were executed:
+
+### Completed
+
+1. **Synced local `review-dev-plan-ubpu4`** with remote — pulled 1 missing commit (`2f6dbcf` — `WEB_PLAN_REVIEW.md`).
+
+2. **Cherry-picked `REVIEW-dev-plan.md`** from `review-dev-plan-W9AVA` (commit `2f44220`) into `review-dev-plan-ubpu4`. Clean cherry-pick, no conflicts.
+
+3. **Merged all consolidated work into `audit-branch-organization-K2YjW`** — this branch now contains everything:
+   - All 20 source/config/test files
+   - All 4 review documents
+   - CI pipeline
+   - CLAUDE.md with full web app plan
+   - This audit document
+   - 78 tests passing
+
+4. **Created `cleanup-branches.sh`** — an interactive script to delete the 4 redundant remote branches.
+
+### Remaining (requires manual action)
+
+Session permissions prevented remote branch deletion. Run the cleanup script to finish:
+
+```bash
+./cleanup-branches.sh
+```
+
+This will delete these remote branches (with confirmation prompt):
+- `claude/review-project-design-TBQDW` — exact duplicate
+- `claude/career-matcher-foundation-HWrR7` — subset (no unique content)
+- `claude/review-dev-plan-W9AVA` — unique content already merged
+- `claude/review-dev-plan-ubpu4` — all content merged into this branch
+
+### Post-cleanup state
+
+After running the script, the repository will have a single branch (`audit-branch-organization-K2YjW`) containing all work. This can then be merged into `main` to establish a clean starting point for web app development.
