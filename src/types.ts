@@ -37,6 +37,10 @@ export interface Job {
   /** One-sentence plain-language description a teen can understand. */
   shortDescription: string;
   profile: JobDimensionProfile;
+  /** Informational only — does not affect scoring or elimination. */
+  outlookNote?: string;
+  /** Informational only — does not affect scoring or elimination. */
+  typicalEducation?: string;
 }
 
 // ---------------------------------------------------------------------------

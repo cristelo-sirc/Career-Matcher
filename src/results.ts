@@ -65,6 +65,10 @@ export interface FormattedMatch {
   fitBand: string;
   fitReasons: string[];
   frictionPoints: string[];
+  /** Informational metadata — does not affect scoring or elimination. */
+  outlookNote?: string;
+  /** Informational metadata — does not affect scoring or elimination. */
+  typicalEducation?: string;
 }
 
 /**
@@ -92,6 +96,8 @@ export function formatResults(
     fitBand: fitBand(r.fitScore),
     fitReasons: r.fitReasons,
     frictionPoints: r.frictionPoints,
+    outlookNote: r.job.outlookNote,
+    typicalEducation: r.job.typicalEducation,
   }));
 
   const eliminatedFormatted: FormattedMatch[] = eliminated.map((r, i) => ({
@@ -102,6 +108,8 @@ export function formatResults(
     fitBand: fitBand(r.fitScore),
     fitReasons: r.fitReasons,
     frictionPoints: r.frictionPoints,
+    outlookNote: r.job.outlookNote,
+    typicalEducation: r.job.typicalEducation,
   }));
 
   return {
@@ -144,6 +152,15 @@ export function renderResultsAsText(formatted: FormattedResults): string {
     }
     for (const friction of match.frictionPoints) {
       lines.push(`       - ${friction}`);
+    }
+    if (match.typicalEducation || match.outlookNote) {
+      lines.push("");
+      if (match.typicalEducation) {
+        lines.push(`       Education: ${match.typicalEducation}`);
+      }
+      if (match.outlookNote) {
+        lines.push(`       Outlook: ${match.outlookNote}`);
+      }
     }
   }
 
