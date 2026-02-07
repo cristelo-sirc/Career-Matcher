@@ -17,10 +17,10 @@ interest-domain dimension.
 
 ## Project State
 
-- **Version:** 0.2.0 — Phases 1, 2, 3, 5, and 6.1 remediated; Phase 4 remaining
+- **Version:** 0.3.0 — All remediation phases complete (1–5, 6.1, 6.3)
 - **Stack:** TypeScript 5.3.3 strict, Vitest 1.2.0, zero runtime dependencies
 - **Architecture:** 4-phase pipeline: Measure (prompts) → Score → Match → Format
-- **Tests:** 42 passing (scoring, matching, results, validation) — integration tests pending
+- **Tests:** 72 passing (scoring, matching, results, validation, integration, boundary)
 - **Jobs:** 52 jobs across 12+ sectors with O*NET-informed profiles
 - **Prompts:** 32 situational prompts (4 per dimension)
 - **CI:** GitHub Actions pipeline (lint, test, build)
@@ -57,21 +57,22 @@ npm run build     # tsc → dist/
 
 ```
 src/
-  index.ts           — Public API surface; re-exports all consumer-facing symbols
-  types.ts           — Core interfaces: Job, UserDimensionProfile, MatchResult, etc.
-  dimensions.ts      — 8 dimension definitions, level types, metadata, ordinal flags
-  jobs.ts            — 52 job profiles with O*NET-informed dimensions and metadata
-  prompts.ts         — 32 situational prompts, 4 per dimension
-  scoring.ts         — Phase 2: nudge accumulation, level resolution, profile generation
-  scoring.test.ts    — Tests for scoring engine (incl. out-of-bounds warnings)
-  matcher.ts         — Phase 3: scoreJob(), matchJobs() — ordinal distance + elimination
-  matcher.test.ts    — Tests for matcher (4 archetypal profiles + ordinal adjacency)
-  results.ts         — Phase 4: fitBand(), formatResults(), renderResultsAsText()
-  results.test.ts    — Tests for result formatting (fit bands, soft language, disclaimer)
-  validate.ts        — Data integrity validation for prompts and jobs
-  validate.test.ts   — Tests for validation (valid data + malformed data detection)
+  index.ts              — Public API surface; re-exports all consumer-facing symbols
+  types.ts              — Core interfaces: Job, UserDimensionProfile, MatchResult, etc.
+  dimensions.ts         — 8 dimension definitions, level types, metadata, ordinal flags
+  jobs.ts               — 52 job profiles with O*NET-informed dimensions and metadata
+  prompts.ts            — 32 situational prompts, 4 per dimension
+  scoring.ts            — Phase 2: nudge accumulation, level resolution, profile generation
+  scoring.test.ts       — Tests for scoring engine (incl. out-of-bounds warnings)
+  matcher.ts            — Phase 3: scoreJob(), matchJobs() — ordinal distance + elimination
+  matcher.test.ts       — Tests for matcher (archetypes, center/conflicted, boundaries)
+  results.ts            — Phase 4: fitBand(), formatResults(), renderResultsAsText()
+  results.test.ts       — Tests for result formatting (fit bands, soft language, no-matches)
+  validate.ts           — Data integrity validation for prompts and jobs
+  validate.test.ts      — Tests for validation (valid data + malformed data detection)
+  integration.test.ts   — End-to-end pipeline tests (responses → text output)
 .github/
-  workflows/ci.yml   — CI: checkout → type-check → test → build
+  workflows/ci.yml      — CI: checkout → type-check → test → build
 ```
 
 ## Current Dimension Model
@@ -180,62 +181,34 @@ for invalid response indices.
 Added JSDoc to resolveLevel (insertion order per ES2015+ spec) and matchJobs
 (stable sort by input array position).
 
-## Phase 4: Fix Validation Gaps — PENDING (Round 3)
+## Phase 4: Fix Validation Gaps ✓ COMPLETE
 
-### 4.1 Add end-to-end integration test
+### 4.1 Add end-to-end integration test ✓
 
-**Why:** VAL-02 — no test covers the full pipeline from prompt responses to formatted output.
+Created integration.test.ts with full pipeline tests for Quiet Builder and Social
+Organizer archetypes. Verifies: profile resolution from prompt responses, job ranking
+correctness, fit band display, metadata output, scope disclaimer, and soft elimination
+language. 13 tests.
 
-**Tasks:**
-1. Create `src/integration.test.ts`.
-2. Test: Given the "Quiet Builder" prompt responses (choose specific option indices for
-   all 32 prompts), run `processResponses` → `resolveProfile` → `matchJobs` →
-   `formatResults` → `renderResultsAsText`. Assert:
-   - Profile dimensions match expected values.
-   - Top match is a physical/solo job.
-   - Output text contains expected job titles.
-   - Output text contains fit band labels (not percentages).
-3. Repeat for 1-2 other archetypes.
+### 4.2 Add ambiguous/center profile testing ✓
 
-### 4.2 Add ambiguous/center profile testing
+Added Moderate Middle profile (all center values) — verifies no crash, many survivors,
+deterministic ranking. Added Conflicted profile (solo + constant interaction) — verifies
+graceful handling, appropriate eliminations, accurate friction messages. 5 tests.
 
-**Why:** VAL-01 — no tests for users who are near the middle on most dimensions.
+### 4.3 Add adversarial "no matches" test ✓
 
-**Tasks:**
-1. In `matcher.test.ts`: Add a "Moderate Middle" profile where every dimension is set
-   to the middle/moderate value. Verify:
-   - No crash or unexpected behavior.
-   - Most jobs survive elimination (center profile has few hard mismatches).
-   - Ranking is stable (deterministic order for tied scores).
-2. Add a "Conflicted" profile with dimensions that rarely co-occur in the job database
-   (e.g., solo + constant interaction). Verify:
-   - The system handles it gracefully.
-   - Many jobs are eliminated (expected).
-   - The friction points accurately reflect the tension.
+Created 3 extreme synthetic jobs against an opposite profile. Verifies all eliminated,
+empty topMatches, "No strong matches found" in output, and scope disclaimer present
+even with zero matches. 4 tests.
 
-### 4.3 Add adversarial "no matches" test
+### 4.4 Add elimination boundary tests ✓
 
-**Why:** VAL-04 — the empty-results path is never triggered in tests.
-
-**Tasks:**
-1. Create a custom `Job[]` array with 3 jobs that are all extreme profiles (all crowd/
-   chaotic/strict/physical). Create a user profile that is the opposite on all dimensions.
-   Verify all 3 are eliminated.
-2. Pass to `formatResults`. Verify `topMatches` is empty.
-3. Pass to `renderResultsAsText`. Verify output contains "No strong matches found."
-
-### 4.4 Add elimination boundary tests
-
-**Why:** VAL-03 — the 1-vs-2 mismatch boundary is not explicitly tested.
-
-**Tasks:**
-1. Create a synthetic job that matches a known profile on exactly 6/7 primary dimensions
-   (1 mismatch). Verify `eliminated === false`.
-2. Create a synthetic job that matches on exactly 5/7 (2 mismatches). Verify
-   `eliminated === true`.
-3. Test ordinal distance boundaries: 2 adjacent mismatches (weighted 1.0) → NOT
-   eliminated. 1 full + 1 adjacent (weighted 1.5) → NOT eliminated. 2 full mismatches
-   (weighted 2.0) → eliminated.
+Tested all boundary conditions with synthetic jobs: 1 full mismatch (not eliminated),
+2 full (eliminated at 2.0), 2 adjacent (not eliminated at 1.0), 1 full + 1 adjacent
+(not eliminated at 1.5), 1 full + 2 adjacent (eliminated at 2.0), 4 adjacent
+(eliminated at 2.0), 3 adjacent (not eliminated at 1.5), and 2-step ordinal gap
+verified as full mismatch. 8 tests.
 
 ## Phase 5: Expand Job Database ✓ COMPLETE
 
@@ -281,15 +254,9 @@ Added scope disclaimer header and temporal footer to renderResultsAsText output.
 
 ## Remaining Work
 
-### Round 3: Phase 4 (Validation Tests)
-- 4.1: End-to-end integration test
-- 4.2: Ambiguous/center profile tests
-- 4.3: Adversarial "no matches" test
-- 4.4: Elimination boundary tests
-
-### Deferred
+### Deferred (nice-to-have, not blocking)
 - 3.2: Tighten DimensionScores type (low priority — runtime validation in place)
-- 6.2: Option-order randomization (nice-to-have)
+- 6.2: Option-order randomization (presentation-layer concern)
 
 ## Testing Invariants (Assert After Every Phase)
 
