@@ -131,3 +131,99 @@ describe("renderResultsAsText", () => {
     expect(text).toContain("+");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Phase 4.3 — Adversarial "no matches" test
+// ---------------------------------------------------------------------------
+
+describe("renderResultsAsText — no matches scenario", () => {
+  // 3 extreme jobs: all crowd, chaotic, strict, physical
+  const extremeJobs: import("./types.js").Job[] = [
+    {
+      id: "extreme-1",
+      title: "Extreme Job A",
+      shortDescription: "Test extreme job A",
+      profile: {
+        energyRhythm: ["burst"],
+        peopleDensity: ["crowd"],
+        interactionDemand: ["constant"],
+        schedulePredictability: ["chaotic"],
+        ruleDensity: ["strict"],
+        primaryLoadType: ["physical"],
+        errorPressure: ["high"],
+        workValue: ["achievement"],
+      },
+    },
+    {
+      id: "extreme-2",
+      title: "Extreme Job B",
+      shortDescription: "Test extreme job B",
+      profile: {
+        energyRhythm: ["burst"],
+        peopleDensity: ["crowd"],
+        interactionDemand: ["constant"],
+        schedulePredictability: ["chaotic"],
+        ruleDensity: ["strict"],
+        primaryLoadType: ["physical"],
+        errorPressure: ["high"],
+        workValue: ["achievement"],
+      },
+    },
+    {
+      id: "extreme-3",
+      title: "Extreme Job C",
+      shortDescription: "Test extreme job C",
+      profile: {
+        energyRhythm: ["burst"],
+        peopleDensity: ["crowd"],
+        interactionDemand: ["constant"],
+        schedulePredictability: ["chaotic"],
+        ruleDensity: ["strict"],
+        primaryLoadType: ["physical"],
+        errorPressure: ["high"],
+        workValue: ["achievement"],
+      },
+    },
+  ];
+
+  // Opposite profile on nearly every dimension
+  const oppositeProfile: UserDimensionProfile = {
+    energyRhythm: "steady",
+    peopleDensity: "solo",
+    interactionDemand: "minimal",
+    schedulePredictability: "predictable",
+    ruleDensity: "loose",
+    primaryLoadType: "creative",
+    errorPressure: "low",
+    workValue: "autonomy",
+  };
+
+  it("all extreme jobs are eliminated against opposite profile", () => {
+    const results = matchJobs(extremeJobs, oppositeProfile);
+    for (const r of results) {
+      expect(r.eliminated).toBe(true);
+    }
+  });
+
+  it("formatResults produces empty topMatches", () => {
+    const results = matchJobs(extremeJobs, oppositeProfile);
+    const formatted = formatResults(results, oppositeProfile);
+    expect(formatted.topMatches).toHaveLength(0);
+    expect(formatted.eliminated).toHaveLength(3);
+  });
+
+  it("renderResultsAsText shows 'No strong matches found'", () => {
+    const results = matchJobs(extremeJobs, oppositeProfile);
+    const formatted = formatResults(results, oppositeProfile);
+    const text = renderResultsAsText(formatted);
+    expect(text).toContain("No strong matches found");
+  });
+
+  it("renderResultsAsText still includes scope disclaimer when no matches", () => {
+    const results = matchJobs(extremeJobs, oppositeProfile);
+    const formatted = formatResults(results, oppositeProfile);
+    const text = renderResultsAsText(formatted);
+    expect(text).toContain("not a career assessment");
+    expect(text).toContain("preferences today");
+  });
+});
