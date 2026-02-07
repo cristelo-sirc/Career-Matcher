@@ -19,6 +19,58 @@ import type {
 } from "./types.js";
 
 // ---------------------------------------------------------------------------
+// Seeded PRNG — Mulberry32 (simple, deterministic, zero-dependency)
+// ---------------------------------------------------------------------------
+
+/** Create a seeded random number generator (0–1 range, exclusive). */
+function mulberry32(seed: number): () => number {
+  let state = seed | 0;
+  return () => {
+    state = (state + 0x6D2B79F5) | 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Option-order randomization
+// ---------------------------------------------------------------------------
+
+/**
+ * Creates a copy of the prompt array with option order shuffled within
+ * each prompt. Uses a seeded PRNG (Mulberry32) for reproducibility.
+ *
+ * This is a presentation-layer concern — shuffled prompts still carry
+ * the same dimension/nudgeToward/weight metadata per option, so scoring
+ * works unchanged when responses reference the shuffled option indices.
+ *
+ * @param prompts - The original prompt array
+ * @param seed - Integer seed for deterministic shuffling
+ * @returns A new prompt array with options in shuffled order
+ */
+export function createShuffledPrompts(
+  prompts: readonly SituationalPrompt[],
+  seed: number,
+): SituationalPrompt[] {
+  const random = mulberry32(seed);
+
+  function fisherYatesShuffle<T>(arr: readonly T[]): T[] {
+    const result = [...arr];
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  }
+
+  return prompts.map((prompt) => ({
+    ...prompt,
+    options: fisherYatesShuffle(prompt.options),
+  }));
+}
+
+// ---------------------------------------------------------------------------
 // Score accumulation
 // ---------------------------------------------------------------------------
 
@@ -36,7 +88,10 @@ export function applyNudge(
   scores: DimensionScores,
   option: PromptOption,
 ): void {
-  const bucket = scores[option.dimension];
+  // Cast needed: option.dimension is Dimension (union) and option.nudgeToward
+  // is string. Runtime validation (validateDataIntegrity) ensures nudgeToward
+  // is a valid level for the given dimension.
+  const bucket = scores[option.dimension] as Record<string, number>;
   bucket[option.nudgeToward] = (bucket[option.nudgeToward] ?? 0) + option.weight;
 }
 
@@ -90,11 +145,11 @@ export function processResponses(
  * wins. This is guaranteed by the ES2015+ spec for string keys: object
  * property iteration follows insertion order for non-integer keys.
  */
-export function resolveLevel(bucket: Record<string, number>): string | null {
+export function resolveLevel(bucket: Partial<Record<string, number>>): string | null {
   let best: string | null = null;
   let bestScore = -1;
   for (const [level, score] of Object.entries(bucket)) {
-    if (score > bestScore) {
+    if (score != null && score > bestScore) {
       best = level;
       bestScore = score;
     }

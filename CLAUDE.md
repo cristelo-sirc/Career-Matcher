@@ -17,10 +17,10 @@ interest-domain dimension.
 
 ## Project State
 
-- **Version:** 0.3.0 — All remediation phases complete (1–5, 6.1, 6.3)
+- **Version:** 0.4.0 — All remediation phases complete, including deferred items
 - **Stack:** TypeScript 5.3.3 strict, Vitest 1.2.0, zero runtime dependencies
 - **Architecture:** 4-phase pipeline: Measure (prompts) → Score → Match → Format
-- **Tests:** 72 passing (scoring, matching, results, validation, integration, boundary)
+- **Tests:** 78 passing (scoring, matching, results, validation, integration, boundary, shuffle)
 - **Jobs:** 52 jobs across 12+ sectors with O*NET-informed profiles
 - **Prompts:** 32 situational prompts (4 per dimension)
 - **CI:** GitHub Actions pipeline (lint, test, build)
@@ -158,7 +158,7 @@ Added scope disclaimer header and temporal footer to output.
 Added ordinal flag to DimensionMeta. Adjacent mismatches = 0.5, full = 1.0.
 Elimination threshold: weighted mismatch >= 2.0. Softer friction messages for adjacency.
 
-## Phase 3: Fix Verification Gaps ✓ MOSTLY COMPLETE
+## Phase 3: Fix Verification Gaps ✓ COMPLETE
 
 ### 3.1 Add prompt/job data integrity validation ✓
 
@@ -166,10 +166,13 @@ Created validate.ts with validateDataIntegrity() function. Validates all prompt
 dimensions, nudgeToward values, and job profile levels against DIMENSION_META.
 4 tests covering valid data and malformed data detection.
 
-### 3.2 Tighten the `DimensionScores` type — DEFERRED
+### 3.2 Tighten the `DimensionScores` type ✓
 
-Complex type-level refactor with diminishing returns given Phase 3.1's runtime
-validation covers the same risk surface. May revisit in a future iteration.
+Added `DimensionLevelMap` mapped type constraining each dimension's score bucket to
+its valid level union (e.g., `energyRhythm` bucket only accepts `EnergyRhythm` keys).
+`DimensionScores` is now a per-dimension mapped type instead of `Record<Dimension,
+Record<string, number>>`. Internal casts in `applyNudge` are validated at runtime by
+Phase 3.1's `validateDataIntegrity()`.
 
 ### 3.3 Add warning for out-of-bounds option indices ✓
 
@@ -229,22 +232,20 @@ Each job references O*NET Work Context descriptors in source comments.
 Added optional `typicalEducation` and `outlookNote` to Job interface. Populated for all
 52 jobs. Displayed in renderResultsAsText after friction points.
 
-## Phase 6: Operational Readiness — PARTIALLY COMPLETE
+## Phase 6: Operational Readiness ✓ COMPLETE
 
 ### 6.1 Add CI pipeline ✓
 
 Created `.github/workflows/ci.yml` — triggers on push/PR to main. Steps: checkout,
 setup-node (20.x), npm ci, type-check, test, build.
 
-### 6.2 Add option-order randomization support — PENDING
+### 6.2 Add option-order randomization support ✓
 
-**Tasks:**
-1. In `types.ts`: Add a `shuffleSeed?: number` parameter to `processResponses` (or a
-   wrapper function `createShuffledPrompts`).
-2. Implement Fisher-Yates shuffle of option order within each prompt, seeded for
-   reproducibility.
-3. This is a presentation-layer concern — it does not change scoring logic. The
-   response index still maps to the original option array.
+Added `createShuffledPrompts(prompts, seed)` function using seeded Mulberry32 PRNG
+and Fisher-Yates shuffle. Deterministic (same seed = same order), presentation-layer
+only — shuffled prompts carry the same dimension/nudgeToward/weight metadata so
+scoring works unchanged. 6 tests covering determinism, preservation, and pipeline
+compatibility.
 
 ### 6.3 Add scope disclaimer to output ✓
 
@@ -254,9 +255,7 @@ Added scope disclaimer header and temporal footer to renderResultsAsText output.
 
 ## Remaining Work
 
-### Deferred (nice-to-have, not blocking)
-- 3.2: Tighten DimensionScores type (low priority — runtime validation in place)
-- 6.2: Option-order randomization (presentation-layer concern)
+All planned remediation is complete. No outstanding items.
 
 ## Testing Invariants (Assert After Every Phase)
 

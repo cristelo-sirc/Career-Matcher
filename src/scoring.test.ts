@@ -5,6 +5,7 @@ import {
   processResponses,
   resolveLevel,
   resolveProfile,
+  createShuffledPrompts,
 } from "./scoring.js";
 import { PROMPTS } from "./prompts.js";
 import { ALL_DIMENSIONS } from "./dimensions.js";
@@ -96,6 +97,70 @@ describe("processResponses", () => {
     expect(warnings.length).toBe(1);
     expect(warnings[0]).toContain("er-1");
     expect(warnings[0]).toContain("out of bounds");
+  });
+});
+
+describe("createShuffledPrompts", () => {
+  it("returns the same number of prompts", () => {
+    const shuffled = createShuffledPrompts(PROMPTS, 42);
+    expect(shuffled.length).toBe(PROMPTS.length);
+  });
+
+  it("preserves all prompt IDs and scenarios", () => {
+    const shuffled = createShuffledPrompts(PROMPTS, 42);
+    for (let i = 0; i < PROMPTS.length; i++) {
+      expect(shuffled[i].id).toBe(PROMPTS[i].id);
+      expect(shuffled[i].scenario).toBe(PROMPTS[i].scenario);
+    }
+  });
+
+  it("preserves all options (same set, possibly different order)", () => {
+    const shuffled = createShuffledPrompts(PROMPTS, 42);
+    for (let i = 0; i < PROMPTS.length; i++) {
+      expect(shuffled[i].options.length).toBe(PROMPTS[i].options.length);
+      // Same options, just potentially reordered
+      const origTexts = PROMPTS[i].options.map((o) => o.text).sort();
+      const shuffTexts = shuffled[i].options.map((o) => o.text).sort();
+      expect(shuffTexts).toEqual(origTexts);
+    }
+  });
+
+  it("is deterministic — same seed produces same order", () => {
+    const shuffled1 = createShuffledPrompts(PROMPTS, 123);
+    const shuffled2 = createShuffledPrompts(PROMPTS, 123);
+    for (let i = 0; i < PROMPTS.length; i++) {
+      const texts1 = shuffled1[i].options.map((o) => o.text);
+      const texts2 = shuffled2[i].options.map((o) => o.text);
+      expect(texts1).toEqual(texts2);
+    }
+  });
+
+  it("different seeds produce different orders", () => {
+    const shuffled1 = createShuffledPrompts(PROMPTS, 1);
+    const shuffled2 = createShuffledPrompts(PROMPTS, 2);
+    // At least one prompt should have different option order
+    const hasDifference = PROMPTS.some((_, i) => {
+      const texts1 = shuffled1[i].options.map((o) => o.text);
+      const texts2 = shuffled2[i].options.map((o) => o.text);
+      return texts1.some((t, j) => t !== texts2[j]);
+    });
+    expect(hasDifference).toBe(true);
+  });
+
+  it("scoring still works correctly with shuffled prompts", () => {
+    // Use same response indices — results differ because options are reordered,
+    // but the pipeline shouldn't crash and should produce valid profiles
+    const shuffled = createShuffledPrompts(PROMPTS, 99);
+    const responses: Record<string, number> = {};
+    for (const prompt of shuffled) {
+      responses[prompt.id] = 0;
+    }
+    const { scores, warnings } = processResponses(shuffled, responses);
+    expect(warnings).toEqual([]);
+
+    const profile = resolveProfile(scores);
+    expect(profile).toHaveProperty("energyRhythm");
+    expect(profile).toHaveProperty("workValue");
   });
 });
 

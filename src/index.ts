@@ -37,6 +37,7 @@ export type {
   UserDimensionProfile,
   SituationalPrompt,
   PromptOption,
+  DimensionLevelMap,
   DimensionScores,
   MatchResult,
 } from "./types.js";
@@ -52,6 +53,7 @@ export {
   processResponses,
   resolveLevel,
   resolveProfile,
+  createShuffledPrompts,
 } from "./scoring.js";
 export type { ProcessResponsesResult } from "./scoring.js";
 
