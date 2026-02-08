@@ -22,12 +22,14 @@ interest-domain dimension.
 - **Web app:** Planned — see Web Application Development Plan below
 - **Architecture:** Core library = 4-phase pipeline (Measure → Score → Match → Format); Web app = Next.js consuming the core
 - **Core tests:** 78 passing (scoring, matching, results, validation, integration, boundary, shuffle)
-- **Jobs:** 52 jobs across 12+ sectors with O*NET-informed profiles
+- **Jobs:** 54 jobs across 12+ sectors with O*NET-informed profiles
 - **Prompts:** 32 situational prompts (4 per dimension)
 - **CI:** GitHub Actions pipeline (lint, test, build)
 - **Reviews completed:**
   - `DESIGN_REVIEW.md` — V&V engineering review (10 findings, all remediated)
   - `EXPERT_REVIEW_VOCATIONAL_PSYCHOLOGY.md` — independent domain expert review (verdict: conditionally sound, all conditions met)
+  - `WEB_PLAN_REVIEW.md` — product design review (10 findings, all incorporated)
+  - `IMPLEMENTATION_PLAN_REVIEW.md` — V&V review of remediation + web plan (11 findings, all incorporated)
 
 ## Build / Test / Lint
 
@@ -113,7 +115,7 @@ npm run lighthouse    # Lighthouse CI performance audit
 │  Core Library (zero dependencies — unchanged)               │
 │                                                             │
 │  prompts → scoring → matcher → results                      │
-│  32 prompts   profile    52 jobs    fit bands               │
+│  32 prompts   profile    54 jobs    fit bands               │
 │  8 dimensions  generation  ranking   formatting             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -130,7 +132,7 @@ src/                              ← Core library (unchanged)
   index.ts                        — Public API surface
   types.ts                        — Core interfaces
   dimensions.ts                   — 8 dimension definitions
-  jobs.ts                         — 52 job profiles
+  jobs.ts                         — 54 job profiles
   prompts.ts                      — 32 situational prompts
   scoring.ts                      — Nudge accumulation, profile generation, shuffle
   matcher.ts                      — scoreJob(), matchJobs()
@@ -197,7 +199,6 @@ web/                              ← Web application (NEW)
     lib/
       storage.ts                  — StorageAdapter: sessionStorage → Map fallback
       url-state.ts                — Encode/decode resolved profile for shareable URLs
-      pdf.ts                      — REMOVED (print CSS only — no JS PDF generation)
       analytics.ts                — Privacy-respecting analytics (optional, no PII)
       constants.ts                — App-wide constants, copy text
     styles/
@@ -273,7 +274,7 @@ All 6 phases of the library remediation are complete (Phases 1–6). Summary:
 - **Phase 3** ✓ — Fixed verification (data validation, tighter types, OOB warnings, tie-break docs)
 - **Phase 4** ✓ — Fixed validation (integration tests, center/conflicted profiles, adversarial
   tests, elimination boundary tests) — 78 total tests
-- **Phase 5** ✓ — Expanded jobs (52 jobs, education + outlook metadata)
+- **Phase 5** ✓ — Expanded jobs (54 jobs, education + outlook metadata)
 - **Phase 6** ✓ — Operational readiness (CI pipeline, option-order shuffle, scope disclaimer)
 
 For full remediation details, see git history on this branch.
@@ -289,7 +290,7 @@ For full remediation details, see git history on this branch.
 | Framework | **Next.js 15** (App Router, static export) | File-based routing, static export = no server needed, React ecosystem, excellent performance defaults. Static export means hostable on any CDN with zero server cost. |
 | Language | **TypeScript 5.x** (strict) | Same as core library. Shared type safety across the stack. |
 | Styling | **Tailwind CSS v4** | Utility-first, built-in responsive design, small bundle (tree-shaken), design token system, dark mode support via `class` strategy. |
-| Animation | **Framer Motion v11** | Declarative animations, `AnimatePresence` for exit animations, gesture support, built-in `useReducedMotion()`, layout animations for smooth prompt transitions. |
+| Animation | **Framer Motion v11** OR **CSS animations** | Framer Motion: declarative, `AnimatePresence`, gesture support, `useReducedMotion()`. However, it adds ~30-40KB gzipped against the 200KB budget. **Evaluate in Phase W-1:** if the framework baseline (Next.js + React + Tailwind + Framer Motion) exceeds 160KB gzipped, use CSS `@keyframes` + `View Transitions API` instead (zero JS cost). |
 | Testing (unit) | **Vitest + React Testing Library** | Same test runner as core library, DOM-focused testing philosophy ("test what the user sees"). |
 | Testing (e2e) | **Playwright** | Cross-browser (Chromium, Firefox, WebKit), mobile emulation, accessibility testing integration, screenshot comparison. |
 | Testing (a11y) | **axe-core + @axe-core/playwright** | Automated WCAG 2.1 AA detection, integrated into both unit and e2e tests. |
@@ -419,6 +420,9 @@ can optionally be published as an npm package.
 - [ ] TypeScript strict mode with zero errors
 - [ ] ESLint passes with jsx-a11y plugin active
 - [ ] CI pipeline runs web lint + build alongside core tests
+- [ ] Core library tests still pass (`npm test` from root) — regression gate
+- [ ] Framework baseline bundle size measured and documented (Next.js + React + Tailwind + animation library); must leave >= 40KB gzipped headroom under the 200KB budget for application code
+- [ ] Animation library decision finalized (Framer Motion vs CSS) based on bundle measurement
 
 ---
 
@@ -564,7 +568,7 @@ This page is linked from the footer and provides:
 - Contact information for questions
 
 **Scope & Limitations:**
-- 52-job database is a sample, not exhaustive
+- 54-job database is a sample, not exhaustive
 - Preferences change over time — results are a snapshot
 - Not validated as a psychometric instrument
 - Should not be used as a sole basis for career decisions
@@ -610,7 +614,7 @@ This is the heart of the application. Get this right.
 ```typescript
 // Quiz state managed via useReducer
 type QuizState = {
-  responses: Map<string, number>;  // promptId → selected option index
+  responses: Record<string, number>;  // promptId → selected option index (matches core library's processResponses signature)
   currentIndex: number;            // 0–31
   seed: number;                    // for option shuffle (generated once per session)
   startedAt: number;               // timestamp (not sent anywhere — local UX only)
@@ -774,6 +778,9 @@ For prompts with 4 options (e.g., primaryLoadType), desktop uses a 2×2 grid.
 - [ ] Longest scenario text + 4 options tested on iPhone SE viewport
 - [ ] Options shuffled per session (same seed = same order)
 - [ ] Browser back button navigates quiz (doesn't leave page)
+- [ ] axe-core: zero violations on the quiz page (do not defer to W-7)
+- [ ] Full quiz completable in Safari Private Browsing (do not defer to W-8)
+- [ ] Core library tests still pass (`npm test` from root) — regression gate
 
 ---
 
@@ -1144,6 +1151,8 @@ If all jobs are eliminated (rare but possible with extreme profiles):
 - [ ] Copy-as-text produces readable plain text in clipboard
 - [ ] "Start Over" clears state and returns to landing page
 - [ ] All export features work on iOS Safari, Android Chrome, desktop browsers
+- [ ] Unit tests for URL encoding/decoding: round-trip verified for all-zero profile, all-max profile, mixed profile, and edge cases
+- [ ] Core library tests still pass (`npm test` from root) — regression gate
 
 ---
 
@@ -1239,8 +1248,10 @@ up to $50,000+ per incident.
 - [ ] **No behavioral advertising.** No ad networks, no retargeting, no data brokers.
 - [ ] **No fingerprinting.** Do not access device fingerprint signals (canvas fingerprint,
   WebGL renderer, battery status, etc.).
-- [ ] **Content Security Policy headers** in next.config.ts restricting script-src,
-  frame-src, connect-src to self only.
+- [ ] **Content Security Policy headers** restricting script-src, frame-src, connect-src
+  to self only. Note: Next.js static export cannot set HTTP headers — configure CSP at
+  the hosting layer (Vercel/Cloudflare headers config) or via `<meta http-equiv="Content-Security-Policy">`
+  tag in the root layout.
 
 **Privacy Notice:**
 - Required: a clear, age-appropriate privacy notice accessible from every page
@@ -1702,6 +1713,25 @@ phases are verification passes, not "add accessibility later" phases.
 
 **Web application:** All phases (W-1 through W-11) pending. Begin with W-1.
 
+### MVP Scope Guidance
+
+Phases W-1 through W-5 constitute a **Minimum Viable Product** — a complete, usable tool
+that a teen can use to take the quiz and see results. Phases W-6 through W-11 are
+enhancements (export, accessibility audit, performance tuning, cross-device QA, deployment).
+
+**Prioritize getting W-1 through W-5 into user testing as soon as possible.** The single
+highest-priority open item across all reviews is user acceptance testing with actual
+teens (DESIGN_REVIEW.md finding VAL-05). Every review has identified this as the missing
+piece. A working W-5 product with CSS animations and print CSS is sufficient for a pilot
+test — do not let W-6 through W-11 delay getting real user feedback.
+
+### Cross-Phase Quality Gates
+
+Every web phase must verify:
+1. `npm test` (core library, from root) — regression gate
+2. `cd web && npm run lint` — zero type errors, zero ESLint warnings
+3. `cd web && npm run test` — all component/hook tests pass (once tests exist)
+
 ---
 
 ## Web Plan Review — Remediation Log
@@ -1721,3 +1751,22 @@ All 10 have been incorporated into the phase specs above. Summary:
 | 8 | P2 | jsPDF adds ~80KB against 200KB budget | Removed jsPDF; print CSS only, browser save-as-PDF (Phase W-6) |
 | 9 | P3 | 4-option touch targets tight on iPhone SE | Added explicit testing requirements for longest scenario + 4 options on 375px (Phase W-4) |
 | 10 | P3 | Misc: time estimate, patronizing copy, about page unspecified, corrupted storage, service worker complexity | Fixed: time → "about 10 minutes"; tone guidance added; About page spec added (Phase W-3); corrupted storage recovery added (Phase W-4); service worker deferred to post-launch (Phase W-9) |
+
+## Implementation Plan Review — Remediation Log
+
+A V&V review (`IMPLEMENTATION_PLAN_REVIEW.md`) evaluated the remediation completeness
+and the updated web plan. Findings that still applied have been incorporated above:
+
+| # | Finding | Resolution |
+|---|---------|------------|
+| 1 | Job count documented as 52, actual is 54 | Corrected all references to 54 |
+| 2 | `Map<string, number>` in W-4 state doesn't match core library's `Record<string, number>` | Changed to `Record<string, number>` in W-4 state spec |
+| 3 | CSP headers can't be set via `next.config.ts` in static export | Added note: configure at hosting layer or via `<meta>` tag |
+| 4 | Framer Motion (~30-40KB gzipped) risks exceeding 200KB JS budget | Added CSS animations as alternative; bundle measurement required in W-1 |
+| 5 | No axe-core gate in W-4 acceptance criteria (deferred to W-7) | Added axe-core zero-violation check to W-4 |
+| 6 | No incognito test in W-4 (deferred to W-8) | Added Safari Private Browsing test to W-4 |
+| 7 | No core library regression gate per web phase | Added `npm test` regression gate to W-1, W-4, W-6; cross-phase quality gates section added |
+| 8 | No bundle budget check in W-1 | Added framework baseline measurement to W-1 acceptance criteria |
+| 9 | No share URL round-trip unit tests in W-6 | Added encoding/decoding round-trip tests to W-6 acceptance criteria |
+| 10 | `pdf.ts — REMOVED` still in file map | Removed from file map |
+| 11 | No MVP scope guidance | Added MVP Scope Guidance section (W-1–W-5 = testable product) |
