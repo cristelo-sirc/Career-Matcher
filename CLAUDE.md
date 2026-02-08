@@ -156,14 +156,15 @@ web/                              ← Web application (NEW)
         Card.tsx                  — Elevated surface with focus ring
         Badge.tsx                 — Fit band indicators
         ProgressBar.tsx           — Quiz progress indicator
-        DimensionBar.tsx          — Profile visualization bar
+        DimensionBar.tsx          — Profile visualization (bar for ordinal, chips for categorical)
         Tooltip.tsx               — Accessible tooltip (keyboard + touch)
         SkipLink.tsx              — Skip-to-content accessibility link
         ThemeToggle.tsx           — Light/dark mode switch
       prompts/
         PromptCard.tsx            — Single prompt display
         OptionCard.tsx            — Tappable option (not radio button)
-        PromptNavigator.tsx       — Back/forward/progress orchestration
+        PromptNavigator.tsx       — Back/Next/progress orchestration
+        NextButton.tsx            — Explicit "Next" / "See Results" button
         EncouragementBanner.tsx   — "No wrong answers" micro-copy
       results/
         ProfileSummary.tsx        — Dimension preference visualization
@@ -173,11 +174,12 @@ web/                              ← Web application (NEW)
         JobMetadata.tsx           — Education + outlook display
         EliminatedSection.tsx     — "Less Likely Fits" collapsible
         ExplorationPrompts.tsx    — "What to explore next" suggestions
+        SectionReplay.tsx         — "Something feel off?" selective replay links
         EmptyState.tsx            — No-matches handling
       report/
         PrintLayout.tsx           — Print-optimized results
         ShareButton.tsx           — Generate shareable URL
-        DownloadPDF.tsx           — Client-side PDF generation
+        PrintButton.tsx           — Triggers window.print() for print/save-as-PDF
         CopyText.tsx              — Copy text summary to clipboard
       layout/
         Header.tsx                — App header with navigation
@@ -194,8 +196,8 @@ web/                              ← Web application (NEW)
       useShareableURL.ts          — Encode/decode state in URL
     lib/
       storage.ts                  — StorageAdapter: sessionStorage → Map fallback
-      url-state.ts                — Compress/encode state for shareable URLs
-      pdf.ts                      — Client-side PDF generation
+      url-state.ts                — Encode/decode resolved profile for shareable URLs
+      pdf.ts                      — REMOVED (print CSS only — no JS PDF generation)
       analytics.ts                — Privacy-respecting analytics (optional, no PII)
       constants.ts                — App-wide constants, copy text
     styles/
@@ -292,7 +294,7 @@ For full remediation details, see git history on this branch.
 | Testing (e2e) | **Playwright** | Cross-browser (Chromium, Firefox, WebKit), mobile emulation, accessibility testing integration, screenshot comparison. |
 | Testing (a11y) | **axe-core + @axe-core/playwright** | Automated WCAG 2.1 AA detection, integrated into both unit and e2e tests. |
 | Performance | **Lighthouse CI** | Automated Core Web Vitals checks in CI pipeline. Fail the build if scores drop below 90. |
-| PDF | **Client-side only** (print CSS primary, html-to-canvas + jsPDF secondary) | No server dependency. Print CSS handles 90% of use cases. JS-based PDF for "download" button. |
+| PDF | **Print CSS only** (`@media print` stylesheet) | No server dependency. Print CSS handles all use cases. No JS-based PDF — saves ~80KB from the bundle budget. Users use browser print-to-PDF. |
 | Linting | **ESLint + eslint-plugin-jsx-a11y** | Catch accessibility issues at authoring time, not just in testing. |
 | Formatting | **Prettier** | Consistent code formatting across the team. |
 
@@ -345,11 +347,11 @@ Some will have disabilities. Design for all of them.
   a third of the way through!" After completion: "Nice work! Here's what we found."
 - **Back button always available.** Teens change their minds. Let them. No "are you sure?"
   dialogs. Going back restores the previous selection state.
-- **No submit anxiety.** Results appear automatically after the last prompt — no big
-  "Submit" button that creates performance anxiety. Smooth transition to results.
-- **Results lead with jobs, not psychology.** The teen sees "Software Developer — Strong
-  fit" before they see any dimension explanation. Profile summary is below the matches,
-  not above.
+- **No submit anxiety.** After the last prompt's "Next" tap, results appear with a
+  smooth transition — no separate "Submit" button that creates performance anxiety.
+- **Profile first, then matches.** The teen needs to understand their own preference
+  profile before match cards make sense. Profile summary appears above the matches.
+  This creates context — "here's what you told us" → "here's what fits."
 
 ---
 
@@ -383,11 +385,16 @@ Colors:
   surface: white / gray-900 (dark)         — card and page backgrounds
   text:    gray-900 / gray-100 (dark)      — primary text
   muted:   gray-500 / gray-400 (dark)      — secondary text
-  fit-strong:  emerald-600                  — "Strong fit" badge
-  fit-possible: blue-600                   — "Possible fit" badge
-  fit-stretch: amber-600                   — "Stretch" badge
-  fit-unlikely: gray-400                   — "Unlikely fit" badge
-  danger:  red-600                         — error states only
+  fit-strong:  emerald-600 / emerald-400 (dark)   — "Strong fit" badge
+  fit-possible: blue-600 / blue-400 (dark)       — "Possible fit" badge
+  fit-stretch: amber-600 / amber-400 (dark)      — "Stretch" badge
+  fit-unlikely: gray-400 / gray-500 (dark)       — "Unlikely fit" badge
+  danger:  red-600 / red-400 (dark)              — error states only
+
+  Note: fit-band colors must meet WCAG contrast requirements against both
+  light and dark surface backgrounds. Test each token pair explicitly —
+  do not rely on automatic Tailwind dark variants, as the semantic meaning
+  of these colors (fit quality) requires intentional dark-mode tuning.
 
 Breakpoints:
   sm:  640px    — large phones (landscape)
@@ -449,16 +456,22 @@ can optionally be published as an npm package.
 - Small footprint, inline with text
 
 **ProgressBar**
-- Shows quiz completion (e.g., "Question 8 of 32" + visual bar)
+- Shows quiz completion as a visual bar with section-based labeling
+- Header text shows section name + step within section (e.g., "Social (2 of 4)")
+- The visual bar shows overall progress (0–100%) across all 32 prompts
+- Section dots mark the 8 section boundaries (every 4 prompts = 1 dimension)
 - Accessible: `role="progressbar"`, `aria-valuenow`, `aria-valuemin`, `aria-valuemax`,
-  `aria-label`
+  `aria-label="Social section, question 2 of 4, overall 25% complete"`
 - Animated fill (respects `prefers-reduced-motion`)
-- Optional step dots for section breaks (every 4 questions = 1 dimension)
 
 **DimensionBar**
-- Horizontal bar showing the user's resolved level for one dimension
-- Three segments (representing the 3–4 levels), one highlighted
-- Label above, level name below the highlighted segment
+- Renders the user's resolved level for one dimension using the correct visualization:
+  - **Ordinal dimensions** (peopleDensity, interactionDemand, schedulePredictability,
+    ruleDensity, errorPressure): horizontal segmented bar with one segment highlighted.
+    Implies a spectrum — adjacent levels are visually adjacent.
+  - **Categorical dimensions** (energyRhythm, primaryLoadType, workValue): row of
+    discrete chips/cards with one highlighted. No implied spectrum or ordering.
+- Label above, level name + explanation below
 - Accessible: screen reader announces "People Density: solo"
 - Used in Profile Summary section of results
 
@@ -503,7 +516,7 @@ can optionally be published as an npm package.
 **Hero Section:**
 - Headline: "Discover Work Environments That Fit You" (or similar — jobs-first framing)
 - Subhead: "Answer 32 quick scenarios. See which real careers match your preferences.
-  No sign-up. No data collected. Takes about 5–8 minutes."
+  No sign-up. No data collected. Takes about 10 minutes."
 - Primary CTA: large "Get Started" button
 - Below CTA: "There are no wrong answers — this is about what you prefer, not what
   you're good at."
@@ -524,6 +537,37 @@ can optionally be published as an npm package.
   aptitude test, or guidance tool."
 - Links: About & Methodology, Privacy Notice
 - "Built on the Theory of Work Adjustment (Dawis & Lofquist, 1984)"
+
+### About & Methodology Page (`/about`)
+
+This page is linked from the footer and provides:
+
+**About This Tool:**
+- What Career-Matcher does (explores work-environment preferences)
+- What it does NOT do (not an aptitude test, not career guidance, not a predictor)
+- Who it's for (teens and young adults exploring career options)
+- How to use the results (one input alongside counselor conversations, interest
+  inventories, job shadows, etc.)
+
+**Methodology:**
+- Theory of Work Adjustment (Dawis & Lofquist, 1984) — brief explanation
+- Holland RIASEC (used for the primaryLoadType dimension) — brief explanation
+- The 8 dimensions measured and what they mean
+- How matching works (fit bands, ordinal distance, elimination threshold)
+- Link to O*NET as the source for job profile data
+
+**Privacy Notice:**
+- Zero data collection, zero cookies, zero third-party scripts
+- All computation happens in the browser
+- Closing the page erases everything unless the teen saves/shares
+- COPPA compliance statement
+- Contact information for questions
+
+**Scope & Limitations:**
+- 52-job database is a sample, not exhaustive
+- Preferences change over time — results are a snapshot
+- Not validated as a psychometric instrument
+- Should not be used as a sole basis for career decisions
 
 ### Metadata (SEO & Social)
 
@@ -576,6 +620,7 @@ type QuizAction =
   | { type: 'SELECT_OPTION'; promptId: string; optionIndex: number }
   | { type: 'GO_BACK' }
   | { type: 'GO_TO'; index: number }
+  | { type: 'REPLAY_SECTION'; sectionIndex: number }  // re-enter prompts 4*n..4*n+3
   | { type: 'RESTORE'; state: QuizState };
 ```
 
@@ -597,9 +642,9 @@ type QuizAction =
 **Layout (mobile — 320px to 767px):**
 ```
 ┌─────────────────────────────┐
-│  ← Back          8 of 32    │  ← sticky header
+│  ← Back    Social (2 of 4)  │  ← sticky header (section name + step within section)
 ├─────────────────────────────┤
-│  ████████░░░░░░░░░░░░░░░░░  │  ← progress bar
+│  ████████░░░░░░░░░░░░░░░░░  │  ← progress bar (overall, but labeled by section)
 ├─────────────────────────────┤
 │                             │
 │  "You get to pick where     │  ← scenario text (18px, semibold)
@@ -627,7 +672,7 @@ type QuizAction =
 **Layout (desktop — 1024px+):**
 ```
 ┌───────────────────────────────────────────────────┐
-│          ← Back       Question 8 of 32            │
+│          ← Back       Social (2 of 4)             │
 │          ████████░░░░░░░░░░░░░░░░░░░░░            │
 ├───────────────────────────────────────────────────┤
 │                                                   │
@@ -648,16 +693,29 @@ type QuizAction =
 
 For prompts with 4 options (e.g., primaryLoadType), desktop uses a 2×2 grid.
 
+**4-option prompts on small viewports (375px / iPhone SE):**
+- 4 options stacked vertically may push the last option below the fold, especially
+  with longer scenario text. This is acceptable — scrolling is fine — but each card
+  must still meet the 44px minimum touch target and 16px padding.
+- Test explicitly with the longest scenario text in the prompt set to ensure no
+  option card is clipped or has its touch target compressed.
+- If vertical space is critically tight, reduce card vertical padding from 16px to
+  12px (still above 44px touch target minimum with text content) but never below.
+
 **Selection Behavior:**
 - Tapping/clicking an option selects it (visual: primary border + light background tint
-  + subtle checkmark icon) and auto-advances to the next prompt after a 400ms delay.
-  The delay gives visual feedback that the selection registered before transitioning.
-- If reduced motion is preferred: instant transition, no slide animation.
-- Keyboard: Tab moves between option cards. Enter or Space selects. Arrow keys also
-  navigate between options. Selection auto-advances same as tap.
+  + subtle checkmark icon). Selection does NOT auto-advance. The teen must tap an
+  explicit "Next" button to proceed. This prevents mistap frustration on mobile,
+  gives time for cognitive confirmation, and satisfies WCAG 2.5.2 (no accidental
+  activation) and WCAG 3.2.2 (no unexpected context change on input).
+- The "Next" button appears below the options once a selection is made (disabled/hidden
+  before selection). On desktop, it can also be triggered by pressing Enter.
+- Changing the selection before tapping "Next" is free — just tap a different option.
+- Keyboard: Arrow keys move between option cards. Enter or Space selects the focused
+  option. Once selected, Tab moves focus to the "Next" button. Enter activates it.
 - Screen reader: Each option is a `<button>` in a `<div role="group"
-  aria-labelledby="scenario-heading">`. On selection, announce "Selected. Moving to
-  next question." via `aria-live="polite"` region.
+  aria-labelledby="scenario-heading">`. On selection, announce "Selected: [option text]."
+  via `aria-live="polite"` region. "Next" button is announced when it becomes enabled.
 
 **Transition Animation:**
 - New prompt slides in from the right (or left if going back)
@@ -667,31 +725,53 @@ For prompts with 4 options (e.g., primaryLoadType), desktop uses a 2×2 grid.
 
 **Edge Cases:**
 - First prompt: no "Back" button (or grayed out)
-- Last prompt (32 of 32): after selection, auto-navigate to results page
+- Last prompt (32 of 32): "Next" button reads "See Results" and navigates to results page
 - Refresh mid-quiz: state restored from sessionStorage (or lost if in-memory
   only — show "Looks like your progress was cleared. Start fresh?" with a friendly
   restart button)
+- Corrupted storage: if saved state fails JSON.parse() or has unexpected shape,
+  discard it silently and show the "progress was cleared" restart prompt. Never
+  crash on bad storage data — treat storage as untrusted input.
 - Browser back button: should navigate to previous prompt, not leave the quiz
   (use `history.pushState` or Next.js shallow routing)
 
-**Encouragement Micro-Copy (shown between sections):**
-- After prompt 8 (25%): "Great start! You're a quarter of the way through."
-- After prompt 16 (50%): "Halfway there! Keep going."
-- After prompt 24 (75%): "Almost done — just 8 more to go."
-- These appear as brief overlay text (1.5s) or inline banner. Not modal, not blocking.
+**Section-Based Progress:**
+- 32 prompts are grouped into 8 sections of 4 (one section per dimension).
+- The progress header shows the **section name** and **step within the section**
+  (e.g., "Social (2 of 4)") instead of "Question 8 of 32". This makes the task
+  feel smaller and gives meaningful context about what's being asked.
+- The overall progress bar still shows total progress (0–100%), but the primary
+  framing is section-based.
+- Section names use friendly labels, not dimension IDs:
+  "Energy" · "Social" · "Interaction" · "Schedule" · "Structure" · "Work Type" ·
+  "Pressure" · "Values"
+
+**Section Transitions (shown between sections):**
+- Brief inline banner between sections (not modal, not blocking, ~2s or dismiss):
+  - After section 2 (25%): "Nice — 2 sections down, 6 to go."
+  - After section 4 (50%): "Halfway there."
+  - After section 6 (75%): "Almost done — just 2 sections left."
+- Tone: factual, not patronizing. Appropriate for 14-year-olds and 22-year-olds
+  alike. Avoid exclamation marks and phrases like "Great job!" that feel condescending
+  to older teens.
 
 ### Acceptance Criteria
 - [ ] All 32 prompts displayable with correct scenario text and options
 - [ ] Option selection provides clear visual + accessible feedback
 - [ ] Back navigation works and restores previous selection
-- [ ] Progress bar accurately reflects position (N of 32)
+- [ ] Progress shows section name + step within section (not "N of 32")
+- [ ] Section transitions display between dimension groups
 - [ ] State survives page refresh (sessionStorage path)
 - [ ] State works in incognito mode (in-memory fallback)
 - [ ] Keyboard navigation: Tab between options, Enter/Space to select, arrow keys work
 - [ ] Screen reader: scenario announced, options announced, selection announced
-- [ ] Auto-advance after selection (400ms delay, instant if reduced motion)
+- [ ] Explicit "Next" button advances to next prompt (no auto-advance)
+- [ ] "Next" button disabled/hidden until an option is selected
+- [ ] Last prompt shows "See Results" instead of "Next"
 - [ ] Transitions smooth on 60fps target (or no animation if reduced motion)
 - [ ] Works on 320px viewport (iPhone SE) without horizontal scroll
+- [ ] 4-option prompts on 375px viewport: all cards meet 44px touch target minimum
+- [ ] Longest scenario text + 4 options tested on iPhone SE viewport
 - [ ] Options shuffled per session (same seed = same order)
 - [ ] Browser back button navigates quiz (doesn't leave page)
 
@@ -700,13 +780,14 @@ For prompts with 4 options (e.g., primaryLoadType), desktop uses a 2×2 grid.
 ## Phase W-5: Results Dashboard & Profile Summary
 
 ### Deliverables
-- Results page displaying formatted matches from the core library
-- Profile summary visualization (dimension bars)
+- Results page with profile summary first, then matches (hierarchy: profile → matches)
+- Profile summary visualization (bars for ordinal dimensions, chips for categorical)
 - Expandable match cards with fit band, reasons, friction, metadata
 - "Less Likely Fits" collapsible section
+- "Something feel off?" selective replay by dimension section
 - Empty state for no matches
 - Exploration prompts / "what to do next" guidance
-- Scope disclaimer and temporal footer
+- Scope disclaimer as inline footer note (not banner)
 
 ### Results Page Layout
 
@@ -715,14 +796,21 @@ For prompts with 4 options (e.g., primaryLoadType), desktop uses a 2×2 grid.
 ┌─────────────────────────────┐
 │  Your Results               │  ← h1
 ├─────────────────────────────┤
+│                             │
+│  ── Your Preference        │  ← h2 (profile FIRST — gives context)
+│     Profile ───────────    │
+│                             │
 │  ┌─────────────────────────┐│
-│  │ SCOPE DISCLAIMER        ││  ← subtle banner (not alarming)
-│  │ "This explores your     ││    collapsible after first read
-│  │  preferences, not your  ││
-│  │  abilities..."          ││
+│  │ Energy Rhythm           ││  ← dimension visualization
+│  │ [steady──●──burst─mixed]││    (bars for ordinal, chips for
+│  │                         ││     categorical — see P1-5)
+│  │ People Density          ││
+│  │ [●solo──sm.grp──crowd] ││
+│  │                         ││
+│  │ ... (all 8 dimensions)  ││
 │  └─────────────────────────┘│
 │                             │
-│  ── Your Top Matches ─────  │  ← h2
+│  ── Your Top Matches ─────  │  ← h2 (matches SECOND — now meaningful)
 │                             │
 │  ┌─────────────────────────┐│
 │  │ #1 Software Developer   ││  ← match card
@@ -750,18 +838,13 @@ For prompts with 4 options (e.g., primaryLoadType), desktop uses a 2×2 grid.
 │  │ ▸ Show 12 less likely   ││  ← expand to see eliminated jobs
 │  │   fits                  ││
 │                             │
-│  ── Your Preference        │  ← h2
-│     Profile ───────────    │
-│                             │
-│  ┌─────────────────────────┐│
-│  │ Energy Rhythm           ││  ← dimension bar
-│  │ [steady──●──burst─mixed]││    highlighted segment
-│  │                         ││
-│  │ People Density          ││
-│  │ [●solo──sm.grp──crowd] ││
-│  │                         ││
-│  │ ... (all 8 dimensions)  ││
-│  └─────────────────────────┘│
+│  ── Something Feel Off? ── │  ← h2 (recovery path — see P1-4)
+│  │ "You can revisit any    ││
+│  │  section and change     ││
+│  │  your answers."         ││
+│  │ [↻ Redo: Schedule]      ││  ← per-section replay buttons
+│  │ [↻ Redo: Social]        ││
+│  │ ...                     ││
 │                             │
 │  ── Explore Further ─────  │  ← h2
 │                             │
@@ -781,24 +864,28 @@ For prompts with 4 options (e.g., primaryLoadType), desktop uses a 2×2 grid.
 │                             │
 │  ── Save Your Results ───  │  ← h2
 │                             │
-│  [📄 Download PDF]          │  ← action buttons
-│  [🔗 Copy Share Link]       │
+│  [🔗 Copy Share Link]       │  ← action buttons
 │  [📋 Copy as Text]          │
-│  [🖨 Print]                 │
+│  [🖨 Print / Save as PDF]   │
 │  [↻ Start Over]             │
 │                             │
 │  ─────────────────────────  │
-│  Footer: scope disclaimer   │
-│  + temporal note + about    │
+│  Footer: scope disclaimer   │  ← scope disclaimer lives here
+│  + temporal note + about    │    (inline note, not banner at top)
 └─────────────────────────────┘
 ```
+
+**Scope disclaimer:** Demoted from a top-of-page banner to an inline note in the
+footer area. The disclaimer is important but should not dominate the first screen
+of results. It reads: "This explores your work-environment preferences — not your
+abilities or aptitude. Use alongside conversations with counselors and mentors."
 
 **Desktop Layout:**
 - Max-width: 800px centered
 - Match cards can show fit reasons inline (not collapsed) since there's more space
-- Profile summary can display as horizontal bars side-by-side
+- Profile summary uses horizontal bars/chips side-by-side
 - Save/export buttons in a horizontal row
-- Two-column layout for matches + profile summary at wide viewports (1280px+)
+- Two-column layout for profile + matches side-by-side at wide viewports (1280px+)
 
 ### Match Card — Expanded View
 
@@ -841,21 +928,47 @@ When a match card is expanded ("Why this fits you"):
 
 ### Profile Summary Visualization
 
-Each dimension displayed as a segmented bar:
+**Two visualization styles** based on whether the dimension is ordinal or categorical:
+
+**Ordinal dimensions** (peopleDensity, interactionDemand, schedulePredictability,
+ruleDensity, errorPressure) — use a **segmented bar**. These dimensions have an
+inherent spectrum (low → high) and a bar correctly implies adjacency and distance:
+
+```
+People Density
+  ┌──────────┬──────────┬──────────┐
+  │   solo   │ sm.group │  crowd   │
+  │  ██████  │          │          │  ← "solo" highlighted
+  └──────────┴──────────┴──────────┘
+  Your preference: solo
+  "You tend to prefer working on your own or with minimal company."
+```
+
+**Categorical dimensions** (energyRhythm, primaryLoadType, workValue) — use
+**chips/cards**. These dimensions have no inherent order or spectrum, and a bar would
+falsely imply that "burst" is between "steady" and "mixed", or that "creative" is
+between "analytical" and "organizational":
 
 ```
 Energy Rhythm
-  ┌──────────┬──────────┬──────────┐
-  │  steady  │  burst   │  mixed   │
-  │  ██████  │          │          │  ← "steady" highlighted
-  └──────────┴──────────┴──────────┘
+  ┌──────────┐  ┌──────────┐  ┌──────────┐
+  │ ██steady██│  │  burst   │  │  mixed   │
+  └──────────┘  └──────────┘  └──────────┘
   Your preference: steady
   "You tend to prefer a consistent, even-paced workday."
+
+Work Type (primaryLoadType)
+  ┌──────────┐  ┌──────────┐  ┌──────────────┐  ┌────────────────┐
+  │ physical │  │██analyti.██│  │   creative   │  │ organizational │
+  └──────────┘  └──────────┘  └──────────────┘  └────────────────┘
+  Your preference: analytical
+  "You're drawn to work that involves problem-solving and analysis."
 ```
 
-- Highlighted segment: primary color fill + bold text
-- Non-highlighted segments: muted background + muted text
-- Below each bar: one-sentence plain-language explanation
+**Common to both styles:**
+- Highlighted item: primary color fill + bold text
+- Non-highlighted items: muted background + muted text
+- Below each visualization: one-sentence plain-language explanation
 - Accessible: screen reader announces dimension name + resolved level + description
 - Not interactive (display only) — no controls to change
 
@@ -874,6 +987,22 @@ suggestions for any teen regardless of profile:
    angle — interests and work environment are both important."
 5. "Come back in 6–12 months and retake this — your preferences evolve, and that's
    perfectly normal."
+
+### "Something Feel Off?" — Selective Replay
+
+Teens may see results that don't resonate. Instead of forcing a full restart (32
+questions), allow selective replay by dimension section:
+
+- Display a "Something feel off?" collapsible section on the results page
+- Inside, show one button per section: "Redo: Energy", "Redo: Social", etc.
+- Tapping a section button navigates back to the quiz at that section's first prompt
+  (e.g., prompt 5 for "Social"), with existing answers pre-selected
+- The teen can change their answers for that 4-prompt section, then returns to results
+- Results re-compute using the updated responses
+- Also include a brief explanation: "Sometimes the wording doesn't click the first
+  time. You can redo any section without starting over."
+
+This addresses the "results feel wrong" scenario without requiring a full restart.
 
 ### Empty State (No Matches)
 
@@ -911,10 +1040,15 @@ If all jobs are eliminated (rare but possible with extreme profiles):
 - [ ] Fit badges use color + icon + text (triple-coded for accessibility)
 - [ ] "Less Likely Fits" collapsed by default, expandable
 - [ ] Profile summary shows all 8 dimensions with correct resolved levels
-- [ ] Dimension bars accessible to screen readers
+- [ ] Ordinal dimensions use segmented bars; categorical dimensions use chips/cards
+- [ ] Dimension visualizations accessible to screen readers
 - [ ] Exploration prompts display (static, universal)
 - [ ] Empty state handles zero-match case gracefully
-- [ ] Scope disclaimer visible at top
+- [ ] "Something feel off?" section with per-section replay buttons
+- [ ] Selective replay navigates to correct section, pre-selects existing answers
+- [ ] Results re-compute after section replay
+- [ ] Profile summary appears ABOVE matches (provides context first)
+- [ ] Scope disclaimer is an inline footer note (not a top-of-page banner)
 - [ ] Temporal footer present ("preferences change")
 - [ ] All content readable at 200% zoom, no horizontal scroll
 - [ ] Page reachable via shareable URL (state decoded from URL hash)
@@ -924,9 +1058,8 @@ If all jobs are eliminated (rare but possible with extreme profiles):
 ## Phase W-6: Report Generation & Export
 
 ### Deliverables
-- Print-friendly CSS layout (clean, no UI chrome)
-- Client-side PDF download
-- Shareable URL (state encoded in URL hash — no server)
+- Print-friendly CSS layout (clean, no UI chrome) — this IS the PDF solution
+- Shareable URL (resolved profile encoded in URL — no server)
 - Copy-as-text to clipboard
 - "Start Over" flow
 
@@ -939,35 +1072,48 @@ If all jobs are eliminated (rare but possible with extreme profiles):
 - Margins: standard print margins (0.75in)
 - Triggered by browser's native Ctrl/Cmd+P or "Print" button
 
-### PDF Download
+### PDF / Print
 
-- Primary approach: trigger print dialog (covers 90% of use cases)
-- Enhanced approach: `html-to-canvas` → `jsPDF` for a proper PDF file download
-- The PDF includes:
+- **Print CSS only** — no JS-based PDF generation (jsPDF + html-to-canvas would add
+  ~80KB against the 200KB gzipped JS budget, for marginal benefit over browser
+  print-to-PDF).
+- The "Print / Save as PDF" button triggers `window.print()`, which opens the
+  browser's native print dialog. Every modern browser offers "Save as PDF" in this
+  dialog.
+- The `@media print` stylesheet ensures the printed output includes:
   - Header with tool name and date
   - Scope disclaimer
   - All match cards (expanded) with fit bands
   - Profile summary
   - Exploration prompts
   - Footer with temporal note
-- Generated entirely client-side — no server interaction
+- No server interaction. No additional JS dependencies.
 
 ### Shareable URL
 
-**Encoding:**
-- The quiz state (32 responses, each 0–3) can be encoded as a compact string
-- 32 responses × 2 bits each = 64 bits = 8 bytes
-- Base64-encode the 8 bytes → ~12 characters
-- URL format: `https://domain.com/results/?s=<encoded-string>`
-- Recipient opens URL → state decoded → core library processes → results rendered
-- No server storage, no database, no PII in the URL (just option indices)
+**Encoding — encode results, not raw responses:**
+- The share URL encodes the **resolved profile** (8 dimension levels), not the raw
+  32 responses. This is both more compact and avoids exposing granular response data.
+- 8 dimensions × ~2 bits each ≈ 16 bits = 2 bytes + 1 version byte = 3 bytes
+- Base64url-encode → ~4–6 characters
+- URL format: `https://domain.com/results/?p=<encoded-profile>`
+- Recipient opens URL → profile decoded → `matchJobs()` called → results rendered
+- No server storage, no database, no PII in the URL
 
 **Implementation:**
 ```typescript
-// Encode: Map<string, number> → sorted by prompt order → pack into Uint8Array → base64
-// Decode: base64 → Uint8Array → unpack → Map<string, number> → process
+// Encode: ResolvedProfile → pack dimension levels into Uint8Array → base64url
+// Decode: base64url → Uint8Array → unpack → ResolvedProfile → matchJobs()
 // Include a version byte (first byte) for forward compatibility
+// Note: selective replay is unavailable on shared links (no raw responses)
 ```
+
+**Recipient context:**
+- When a shared link is opened, display a brief banner at the top:
+  "You're viewing someone's Career-Matcher results. Want to discover your own
+  preferences? [Start yours →]"
+- The recipient should understand they're seeing someone else's results, not
+  taking the quiz themselves.
 
 **Sharing UX:**
 - "Copy Share Link" button → copies URL to clipboard → shows "Copied!" toast (2s)
@@ -991,7 +1137,7 @@ If all jobs are eliminated (rare but possible with extreme profiles):
 
 ### Acceptance Criteria
 - [ ] Print view is clean, readable, no UI chrome, proper page breaks
-- [ ] PDF download works client-side (no server calls)
+- [ ] Print button triggers native print dialog (browser save-as-PDF)
 - [ ] Share URL encodes full state in < 50 characters
 - [ ] Share URL decodes and renders correct results on a fresh browser
 - [ ] Share URL works in incognito mode
@@ -1208,7 +1354,7 @@ class StorageAdapter {
 - Landing page: minimal JS (just the landing page + theme toggle)
 - Quiz page: loads prompt data + quiz state logic
 - Results page: loads matcher + results formatter + visualization components
-- PDF generation: lazy-loaded only when "Download PDF" is clicked
+- Print: uses `@media print` CSS only — no additional JS to load
 - Next.js App Router handles this automatically with route-based splitting
 
 **Font Loading:**
@@ -1223,11 +1369,15 @@ class StorageAdapter {
 - OG image: pre-optimized, < 100KB
 - Use SVG for icons (inline, not external files)
 
-**Caching (Service Worker):**
-- Cache the entire app shell on first visit (HTML, CSS, JS, fonts)
-- Subsequent visits load instantly from cache
-- No API calls to cache (there are no API calls)
-- Service worker update: on next visit after deployment, seamlessly update in background
+**Caching:**
+- The app is a static export — CDN edge caching with appropriate `Cache-Control`
+  headers handles most caching needs automatically.
+- **Service worker is deferred.** A service worker adds complexity (update flow,
+  cache invalidation, debugging) for marginal benefit over CDN caching on a static
+  site. The app already loads fast without one. If offline support is later deemed
+  essential, add a minimal service worker in a follow-up — but do not include it
+  in the initial launch.
+- The app must function fully without a service worker (it already does).
 
 ### Progressive Web App (PWA)
 
@@ -1260,10 +1410,10 @@ class StorageAdapter {
 - [ ] Lighthouse Performance >= 95 on mobile simulation
 - [ ] Total JS bundle < 200KB gzipped
 - [ ] No layout shift during page load (CLS < 0.1)
-- [ ] App installs as PWA on Android Chrome
+- [ ] App installs as PWA on Android Chrome (manifest.json + icons)
 - [ ] App installs as PWA on iOS Safari (Add to Home Screen)
-- [ ] App works fully offline after first load
 - [ ] No render-blocking resources
+- [ ] Service worker deferred to post-launch (app works without one)
 - [ ] Fonts load without FOUT (or system fonts used)
 
 ---
@@ -1293,7 +1443,7 @@ class StorageAdapter {
 - [ ] Safe area insets respected (`env(safe-area-inset-*)` for notch/Dynamic Island)
 - [ ] Touch targets work in all orientations
 - [ ] No rubber-band bounce interfering with quiz scrolling
-- [ ] Service worker limitations in incognito handled gracefully
+- [ ] App functions without service worker (deferred to post-launch)
 - [ ] "Add to Home Screen" works and produces standalone app
 
 **Android Chrome:**
@@ -1551,3 +1701,23 @@ phases are verification passes, not "add accessibility later" phases.
 **Core library:** Complete. No outstanding items.
 
 **Web application:** All phases (W-1 through W-11) pending. Begin with W-1.
+
+---
+
+## Web Plan Review — Remediation Log
+
+The web application development plan was reviewed and 10 findings were identified.
+All 10 have been incorporated into the phase specs above. Summary:
+
+| # | Priority | Finding | Resolution |
+|---|----------|---------|------------|
+| 1 | P0 | Auto-advance (400ms) is a UX risk — mistaps, WCAG 3.2.2 | Replaced with explicit "Next" button (Phase W-4) |
+| 2 | P0 | Results page hierarchy inverted — profile buried below matches | Profile summary moved above matches; scope disclaimer demoted to footer note (Phase W-5) |
+| 3 | P1 | "N of 32" progress is demotivating | Replaced with section-based milestones: "Social (2 of 4)" (Phase W-4) |
+| 4 | P1 | No "results feel wrong" recovery path | Added selective per-section replay + "Something feel off?" section (Phases W-4, W-5) |
+| 5 | P1 | Dimension bars misrepresent non-ordinal data | Segmented bars for ordinal dimensions; chips/cards for categorical (Phase W-5) |
+| 6 | P2 | Share URL exposes raw responses | Encodes resolved profile instead; added recipient-facing context banner (Phase W-6) |
+| 7 | P2 | Dark mode fit-band colors unspecified | Added explicit light/dark token pairs for all fit-band colors (Phase W-1) |
+| 8 | P2 | jsPDF adds ~80KB against 200KB budget | Removed jsPDF; print CSS only, browser save-as-PDF (Phase W-6) |
+| 9 | P3 | 4-option touch targets tight on iPhone SE | Added explicit testing requirements for longest scenario + 4 options on 375px (Phase W-4) |
+| 10 | P3 | Misc: time estimate, patronizing copy, about page unspecified, corrupted storage, service worker complexity | Fixed: time → "about 10 minutes"; tone guidance added; About page spec added (Phase W-3); corrupted storage recovery added (Phase W-4); service worker deferred to post-launch (Phase W-9) |
