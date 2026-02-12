@@ -1,4 +1,5 @@
 import { type ButtonHTMLAttributes, type AnchorHTMLAttributes, forwardRef } from "react";
+import Link from "next/link";
 
 type Variant = "primary" | "secondary" | "ghost";
 type Size = "sm" | "md" | "lg";
@@ -48,15 +49,32 @@ export const Button = forwardRef<
 
   if (isAnchor(rest)) {
     const { href, children, ...anchorRest } = rest;
+
+    // Check if it's an external link
+    const isExternal = href.startsWith("http") || href.startsWith("mailto:");
+
+    if (isExternal) {
+      return (
+        <a
+          ref={ref as React.Ref<HTMLAnchorElement>}
+          href={href}
+          className={classes}
+          {...anchorRest}
+        >
+          {children}
+        </a>
+      );
+    }
+
     return (
-      <a
+      <Link
         ref={ref as React.Ref<HTMLAnchorElement>}
         href={href}
         className={classes}
         {...anchorRest}
       >
         {children}
-      </a>
+      </Link>
     );
   }
 
