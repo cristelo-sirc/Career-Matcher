@@ -12,7 +12,7 @@ describe("Button", () => {
   it("renders as an <a> when href is provided", () => {
     render(<Button href="/quiz/">Start</Button>);
     const link = screen.getByRole("link", { name: "Start" });
-    expect(link).toHaveAttribute("href", "/quiz/");
+    expect(link).toHaveAttribute("href", "/quiz");
   });
 
   it("applies primary variant by default", () => {
