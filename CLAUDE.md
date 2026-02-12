@@ -17,8 +17,8 @@ interest-domain dimension.
 
 ## Project State
 
-- **Version:** 0.11.0 — Web app phases W-1 through W-11 complete; deployment-ready
-- **Core library:** Complete (v0.4.0) — TypeScript 5.3.3 strict, Vitest 1.2.0, zero runtime dependencies
+- **Version:** 0.12.0 — Job database modernized for future labor market trends
+- **Core library:** Complete (v0.5.0) — TypeScript 5.3.3 strict, Vitest 1.2.0, zero runtime dependencies
 - **Web app:** Complete through W-11 — fully functional quiz, results, export, accessibility audit, privacy hardening, PWA manifest, cross-device QA, deployment assets (icons, OG image, CI/CD, Lighthouse config)
 - **Architecture:** Core library = 4-phase pipeline (Measure → Score → Match → Format); Web app = Next.js consuming the core
 - **Core tests:** 78 passing (scoring, matching, results, validation, integration, boundary, shuffle)
@@ -26,7 +26,7 @@ interest-domain dimension.
 - **E2E tests:** 191 passing, 9 skipped (Playwright across 5 browser configs: Desktop Chrome, Firefox, Safari, Mobile Chrome, Mobile Safari)
 - **Manual QA:** iPhone and iPad testing passed (all checklist items verified)
 - **Bundle:** Landing ~102KB, Quiz ~119KB, Results ~125KB First Load JS (well under 200KB budget)
-- **Jobs:** 54 jobs across 12+ sectors with O*NET-informed profiles
+- **Jobs:** 97 jobs modernized for the future economy (removed 5 obsolete, added 23 frontier/resilient roles)
 - **Prompts:** 32 situational prompts (4 per dimension)
 - **CI:** GitHub Actions pipeline — `ci.yml` (lint, test, build for core and web) + `deploy.yml` (GitHub Pages deployment)
 - **Animation decision:** CSS animations (not Framer Motion) to preserve bundle budget
@@ -36,6 +36,7 @@ interest-domain dimension.
   - `EXPERT_REVIEW_VOCATIONAL_PSYCHOLOGY.md` — independent domain expert review (verdict: conditionally sound, all conditions met)
   - `WEB_PLAN_REVIEW.md` — product design review (10 findings, all incorporated)
   - `IMPLEMENTATION_PLAN_REVIEW.md` — V&V review of remediation + web plan (11 findings, all incorporated)
+  - `FUTURE_WORK_REPORT.md` — Labor market foresight assessment (validated model resilience, triggered database modernization)
 
 ## Build / Test / Lint
 
@@ -121,7 +122,7 @@ npm run test:e2e:ui   # Playwright UI mode (interactive test runner)
 │  Core Library (zero dependencies — unchanged)               │
 │                                                             │
 │  prompts → scoring → matcher → results                      │
-│  32 prompts   profile    54 jobs    fit bands               │
+│  32 prompts   profile    79 jobs    fit bands               │
 │  8 dimensions  generation  ranking   formatting             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -284,7 +285,7 @@ All 6 phases of the library remediation are complete (Phases 1–6). Summary:
 - **Phase 3** ✓ — Fixed verification (data validation, tighter types, OOB warnings, tie-break docs)
 - **Phase 4** ✓ — Fixed validation (integration tests, center/conflicted profiles, adversarial
   tests, elimination boundary tests) — 78 total tests
-- **Phase 5** ✓ — Expanded jobs (54 jobs, education + outlook metadata)
+- **Phase 5** ✓ — Expanded jobs (79 jobs, education + outlook metadata)
 - **Phase 6** ✓ — Operational readiness (CI pipeline, option-order shuffle, scope disclaimer)
 
 For full remediation details, see git history on this branch.
@@ -2035,3 +2036,15 @@ Phase W-10 (Cross-Device QA) completed successfully. Summary of work:
 - `web/e2e/dark-mode.spec.ts`
 - `web/e2e/incognito.spec.ts`
 - `web/QA_CHECKLIST.md`
+[Previous content ends]
+
+## Lessons Learned
+
+### Model Resilience
+The 8-dimension matching model proved highly resilient to future labor market disruptions. Because it measures fundamental work conditions (like `peopleDensity` and `ruleDensity`) rather than specific technical skills, the core logic remains valid even as job titles change. "How you work" is more durable than "what tools you use."
+
+### Data Modernization
+We learned that static job lists age quickly. To future-proof the tool without constant code churn:
+1.  **Remove the Middle**: Middle-skill repetitive office roles are automating fastest. We purged these to avoid guiding teens toward shrinking fields.
+2.  **Focus on the Edges**: We doubled down on "High Touch" (care, creative, complex management) and "High Physical" (trades, field work) roles, which are most resistant to AI.
+3.  **Explicit Outlooks**: Adding a `futureOutlook` field allows us to be transparent about *why* a job is safe (e.g., "Field work is un-automatable") rather than just saying "Stable."

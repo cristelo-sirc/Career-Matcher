@@ -39,6 +39,8 @@ export interface Job {
   profile: JobDimensionProfile;
   /** Informational only — does not affect scoring or elimination. */
   outlookNote?: string;
+  /** Forward-looking assessment of automation risk and growth. */
+  futureOutlook?: string;
   /** Informational only — does not affect scoring or elimination. */
   typicalEducation?: string;
 }

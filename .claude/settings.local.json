@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh:*)",
+      "Bash(gh auth:*)",
+      "Bash(brew install:*)",
+      "Bash(git --version)",
+      "Bash(curl:*)",
+      "Bash(unzip:*)",
+      "Bash(\"$HOME/.local/bin/gh\" auth status)",
+      "Bash(\"$HOME/.local/bin/gh\" auth login --web --git-protocol https)",
+      "Bash(\"$HOME/.local/bin/gh\" auth login -h github.com -p https 2)",
+      "Bash(\"$HOME/.local/bin/gh\" auth login --with-token)",
+      "Bash(/Users/cristelogarza/.local/bin/gh auth login:*)",
+      "Bash(GH_BROWSER=\"echo\" /Users/cristelogarza/.local/bin/gh auth login -h github.com -p https -w)",
+      "Bash(npm test:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm run build:*)",
+      "Bash(git init:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

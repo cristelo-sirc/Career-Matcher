@@ -16,8 +16,8 @@ describe("Core library imports", () => {
     expect(PROMPTS).toHaveLength(32);
   });
 
-  it("imports JOBS with 54 entries", () => {
-    expect(JOBS).toHaveLength(54);
+  it("imports JOBS with 97 entries", () => {
+    expect(JOBS).toHaveLength(97);
   });
 
   it("imports scoring pipeline functions", () => {

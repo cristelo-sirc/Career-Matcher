@@ -4,7 +4,7 @@
 
 1. On your Mac, open Terminal and run:
    ```
-   cd "/Users/cristelogarza/Claude Code/Career Matcher All Files/Consolidated/web"
+   cd web
    npx serve out -l 3001 --no-clipboard
    ```
 2. Find your Mac's local IP address:
